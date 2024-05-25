@@ -1,14 +1,14 @@
 from pymongo import MongoClient
 from fastapi import HTTPException, status
-from fastapi import FastAPI
+from dotenv import load_dotenv
 import os
 
-app = FastAPI()
+load_dotenv()
 
-
-def get_mongo_client(db_url: str, db_name: str) -> MongoClient:
-    try:
-        client = MongoClient(db_url)
-        return client[db_name]
-    except:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+try:
+    client = MongoClient(os.getenv("MONGO_URI"))
+    db = client[os.getenv("DATABASE_NAME")]
+    user_collection = db["users"]
+    category_collection = db["categories"]
+except:
+    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
