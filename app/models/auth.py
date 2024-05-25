@@ -16,9 +16,13 @@ class Register(BaseModel):
     password: str
 
 
-class ChangePassword(BaseModel):
-    oldPassword: str
-    newPassword: str
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    id: str
 
 
 def validate_email(email):

@@ -1,5 +1,6 @@
-from fastapi import APIRouter, status, HTTPException
-from ..models.user import (
+from fastapi import APIRouter, status, HTTPException, Depends
+from fastapi.security import OAuth2PasswordRequestForm
+from ..models.auth import (
     Register,
     Login,
     validate_email,
@@ -8,6 +9,7 @@ from ..models.user import (
     check_password,
 )
 from ..db.mongodb import user_collection
+from ..utils.oauth2 import create_access_token
 
 router = APIRouter()
 
@@ -39,10 +41,12 @@ def register_user(data: Register):
 
 
 @router.post("/login", status_code=status.HTTP_200_OK)
-def login_user(data: Login):
-    user_dict = data.model_dump()
-    registeredUser = user_collection.find_one({"email": user_dict["email"]})
-    if registeredUser:
-        if check_password(user_dict["password"], registeredUser["password"]):
-            return {"msg": f"Welcome {registeredUser['username']}"}
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+def login_user(data: OAuth2PasswordRequestForm = Depends()):
+    registeredUser = user_collection.find_one({"email": data.username})
+    if not registeredUser or not check_password(
+        data.password, registeredUser["password"]
+    ):
+        return HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
+    access_token = create_access_token(data={"user_id": str(registeredUser["_id"])})
+    return {"access_token": access_token, "token_type": "bearer"}
