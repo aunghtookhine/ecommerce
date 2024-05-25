@@ -10,5 +10,6 @@ try:
     db = client[os.getenv("DATABASE_NAME")]
     user_collection = db["users"]
     category_collection = db["categories"]
+    product_collection = db["products"]
 except:
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
