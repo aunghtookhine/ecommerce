@@ -4,5 +4,5 @@ from fastapi import Path, Query
 
 class Category(BaseModel):
     name: str
-    parent_category: int = 0
-    img_id: int
+    parent_category: str = "0"
+    img_id: str

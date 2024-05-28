@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from fastapi import HTTPException, status
+
 from dotenv import load_dotenv
 import os
 

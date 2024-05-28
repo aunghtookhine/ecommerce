@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 import bcrypt
-import email_validator
 from fastapi import HTTPException, status
 import re
 
@@ -26,11 +25,8 @@ class TokenData(BaseModel):
 
 
 def validate_email(email):
-    try:
-        email_validator.validate_email(email)
-        return True
-    except:
-        return False
+    regex = "[\w\.-]+@[\w\.-]+\.\w{2,4}"
+    return re.match(regex, email)
 
 
 def validate_password(password):

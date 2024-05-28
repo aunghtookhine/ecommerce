@@ -11,7 +11,7 @@ def create_category(data: Category):
     category_dict = data.model_dump()
     category = category_collection.insert_one(category_dict)
     if not category.acknowledged:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT)
 
 
 @router.get("/", status_code=status.HTTP_200_OK)
