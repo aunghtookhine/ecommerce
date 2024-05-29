@@ -13,4 +13,7 @@ try:
     category_collection = db["categories"]
     product_collection = db["products"]
 except:
-    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail="Database Connection Error",
+    )

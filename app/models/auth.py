@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-import bcrypt
+from argon2 import PasswordHasher
 from fastapi import HTTPException, status
 import re
 
@@ -22,6 +22,12 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     id: str
+
+
+class ChangePassword(BaseModel):
+    email: str
+    old_password: str
+    new_password: str
 
 
 def validate_email(email):
@@ -57,9 +63,16 @@ def validate_password(password):
         )
 
 
-def get_hashed_password(plain_text_password):
-    return bcrypt.hashpw(plain_text_password.encode("utf-8"), bcrypt.gensalt())
+def get_hashed_password(plaintext):
+    ph = PasswordHasher()
+    hashed_password = ph.hash(plaintext)
+    return hashed_password
 
 
-def check_password(plain_text_password, hashed_password):
-    return bcrypt.checkpw(plain_text_password.encode("utf-8"), hashed_password)
+def check_password(hashed_password, plaintext):
+    try:
+        ph = PasswordHasher()
+        ph.verify(hashed_password, plaintext)
+        return True
+    except:
+        return False

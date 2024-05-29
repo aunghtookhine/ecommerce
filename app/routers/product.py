@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from ..models.product import Product
 from ..db.mongodb import product_collection
 from bson import ObjectId
-from ..utils.oauth2 import get_current_user
+from ..utils.utils import dict_strip
 
 router = APIRouter()
 
@@ -10,6 +10,7 @@ router = APIRouter()
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def create_product(data: Product):
     product_dict = data.model_dump()
+    dict_strip(product_dict)
     product = product_collection.insert_one(product_dict)
     if not product.acknowledged:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT)

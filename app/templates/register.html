@@ -4,8 +4,12 @@
 
 <div class="container d-flex justify-content-center align-items-center vh-100">
     <div class="w-50 mx-auto p-5 shadow-lg">
-        <h1 class="page-header text-center mb-5">Login</h1>
+        <h1 class="page-header text-center mb-5">Register</h1>
         <form>
+            <div class="mb-3">
+                <label for="email" class="form-label fw-bold">Username</label>
+                <input type="email" class="form-control" id="email">
+            </div>
             <div class="mb-3">
                 <label for="email" class="form-label fw-bold">Email address</label>
                 <input type="email" class="form-control" id="email">
@@ -14,17 +18,15 @@
                 <label for="password" class="form-label fw-bold">Password</label>
                 <input type="password" class="form-control" id="password">
             </div>
+            <div class="mb-3">
+                <label for="password" class="form-label fw-bold">Confirm Password</label>
+                <input type="password" class="form-control" id="password">
+            </div>
             <div class="mb-3 d-flex justify-content-between align-items-center">
                 <a href="">Forgot Password</a>
-                <button type="submit" class="btn btn-success w-25 fw-bold">Login</button>
+                <button type="submit" class="btn btn-success w-25 fw-bold">Register</button>
             </div>
         </form>
-        <div>
-            <p class="text-center fw-bold">Don't you have an account</p>
-            <div class="d-flex justify-content-center">
-                <a href="/register" class="btn btn-outline-success fw-bold">Sign up to Cartopia</a>
-            </div>
-        </div>
     </div>
 </div>
 
