@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from argon2 import PasswordHasher
 from fastapi import HTTPException, status
 import re
@@ -8,11 +8,46 @@ class Login(BaseModel):
     email: str
     password: str
 
+    @field_validator("*")
+    def str_strip(cls, value):
+        return value.strip()
+
 
 class Register(BaseModel):
     username: str
     email: str
     password: str
+
+    @field_validator("*")
+    def str_strip(cls, value):
+        return value.strip()
+
+    @field_validator("username")
+    def username_validation(cls, value):
+        if not value:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Username must be provided",
+            )
+        if len(value.split(" ")) > 1:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Username must be a word",
+            )
+        return value
+
+    @field_validator("email")
+    def email_validation(cls, value):
+        if not validate_email(value):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid Email"
+            )
+        return value
+
+    @field_validator("password")
+    def password_validation(cls, value):
+        validate_password(value)
+        return value
 
 
 class Token(BaseModel):
@@ -28,6 +63,19 @@ class ChangePassword(BaseModel):
     email: str
     old_password: str
     new_password: str
+
+    @field_validator("*")
+    def str_strip(cls, value):
+        return value.strip()
+
+    @field_validator("*")
+    def not_empty(cls, value):
+        if not value:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Fields cannot be empty",
+            )
+        return value
 
 
 def validate_email(email):

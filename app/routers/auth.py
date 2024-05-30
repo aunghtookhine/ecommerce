@@ -11,7 +11,6 @@ from ..models.auth import (
 )
 from ..db.mongodb import user_collection
 from ..utils.oauth2 import create_token
-from ..utils.utils import dict_strip
 
 router = APIRouter()
 
@@ -19,20 +18,6 @@ router = APIRouter()
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def register_user(data: Register):
     user_dict = data.model_dump()
-    dict_strip(user_dict)
-
-    if not user_dict["username"]:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Username must be provided",
-        )
-
-    if len(user_dict["username"].split(" ")) > 1:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Username must be a word",
-        )
-
     isUsername = user_collection.find_one({"username": user_dict["username"]})
     if isUsername:
         raise HTTPException(
@@ -40,17 +25,11 @@ def register_user(data: Register):
             detail="Username can't be duplicated",
         )
 
-    isEmail = validate_email(user_dict["email"])
-    if not isEmail:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid Email"
-        )
     isEmail = user_collection.find_one({"email": user_dict["email"]})
     if isEmail:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Email can't be duplicated"
         )
-    validate_password(user_dict["password"])
 
     user_dict["password"] = get_hashed_password(user_dict["password"])
     user_collection.insert_one(user_dict)
@@ -60,7 +39,6 @@ def register_user(data: Register):
 @router.post("/login", status_code=status.HTTP_200_OK)
 def login_user(data: Login):
     data_dict = data.model_dump()
-    dict_strip(data_dict)
     registeredUser = user_collection.find_one({"email": data_dict["email"]})
 
     if not registeredUser or not check_password(
@@ -77,11 +55,10 @@ def login_user(data: Login):
 @router.patch("/change-password", status_code=status.HTTP_200_OK)
 def change_password(data: ChangePassword):
     data_dict = data.model_dump()
-    dict_strip(data_dict)
     user_docu = user_collection.find_one({"email": data_dict["email"]})
     if not check_password(user_docu["password"], data_dict["old_password"]):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Wrong Password"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Wrong Credentials"
         )
     new_password = get_hashed_password(data_dict["new_password"])
     user = user_collection.update_one(

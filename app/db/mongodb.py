@@ -12,6 +12,8 @@ try:
     user_collection = db["users"]
     category_collection = db["categories"]
     product_collection = db["products"]
+    image_collection = db["images"]
+    checkout_collection = db["checkouts"]
 except:
     raise HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

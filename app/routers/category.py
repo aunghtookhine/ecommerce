@@ -10,8 +10,7 @@ router = APIRouter()
 def create_category(data: Category):
     category_dict = data.model_dump()
     category = category_collection.insert_one(category_dict)
-    if not category.acknowledged:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT)
+    return {"_id": str(category.inserted_id)}
 
 
 @router.get("/", status_code=status.HTTP_200_OK)
@@ -26,7 +25,7 @@ def find_categories():
 
 @router.get("/{id}", status_code=status.HTTP_200_OK)
 def find_category(id: str):
-    category = category_collection.find_one({"_id": ObjectId(id)})
+    category = category_collection.find_one({"_id": ObjectId(id.strip())})
     if not category:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Category Id"
@@ -38,7 +37,7 @@ def find_category(id: str):
 @router.put("/{id}", status_code=status.HTTP_200_OK)
 def update_category(id: str, data: Category):
     category = category_collection.update_one(
-        {"_id": ObjectId(id)}, {"$set": data.model_dump()}
+        {"_id": ObjectId(id.strip())}, {"$set": data.model_dump()}
     )
     if not category.matched_count:
         raise HTTPException(
