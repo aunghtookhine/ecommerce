@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, HTTPException
 from ..models.checkout import Checkout, UpdateCheckout
 from ..db.mongodb import product_collection, user_collection, checkout_collection
 from bson import ObjectId
@@ -38,7 +38,43 @@ def checkout(data: Checkout):
         return {"detail": "Successfully Added"}
 
 
-@router.put("/", status_code=status.HTTP_200_OK)
-def remove_checkout(data: UpdateCheckout):
+@router.put("/decrease", status_code=status.HTTP_200_OK)
+def decrease_quantity(data: UpdateCheckout):
     data_dict = data.model_dump()
-    print(data_dict)
+    product = product_collection.find_one({"_id": ObjectId(data_dict["product_id"])})
+    checkout_collection.update_one(
+        {"user_id": data_dict["user_id"], "product_id": data_dict["product_id"]},
+        {"$inc": {"quantity": -1, "amount": -product["price"]}},
+    )
+    updated_checkout = checkout_collection.find_one(
+        {"user_id": data_dict["user_id"], "product_id": data_dict["product_id"]}
+    )
+    product_collection.update_one(
+        {"_id": ObjectId(data_dict["product_id"])}, {"$inc": {"item": 1}}
+    )
+    if not updated_checkout["quantity"]:
+        checkout_collection.delete_one(
+            {"user_id": data_dict["user_id"], "product_id": data_dict["product_id"]},
+        )
+    return {"detail": "Successfully updated"}
+
+
+@router.put("/increase", status_code=status.HTTP_200_OK)
+def increase_quantity(data: UpdateCheckout):
+    data_dict = data.model_dump()
+    product = product_collection.find_one({"_id": ObjectId(data_dict["product_id"])})
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Product Id"
+        )
+    if not product["item"]:
+        return {"detail": "Insufficient quantity"}
+    product_collection.update_one(
+        {"_id": ObjectId(data_dict["product_id"])}, {"$inc": {"item": -1}}
+    )
+    checkout = checkout_collection.update_one(
+        {"product_id": data_dict["product_id"], "user_id": data_dict["user_id"]},
+        {"$inc": {"quantity": 1}},
+    )
+    if checkout.acknowledged:
+        return {"detail": "Successfully increased."}

@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Request, Depends
 from ..models.product import Product
 from ..db.mongodb import product_collection
 from bson import ObjectId
+import jwt
 
 router = APIRouter()
 

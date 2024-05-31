@@ -1,7 +1,8 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException, status, Depends
 from .routers import auth, category, product, image, checkout
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
+from .models.auth import check_user
 
 
 templates = Jinja2Templates(directory="app/templates")

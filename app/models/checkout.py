@@ -11,4 +11,4 @@ class Checkout(BaseModel):
 
 class UpdateCheckout(BaseModel):
     user_id: str
-    product_ids: list[str]
+    product_id: str

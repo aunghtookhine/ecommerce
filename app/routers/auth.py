@@ -3,14 +3,13 @@ from fastapi.security import OAuth2PasswordRequestForm
 from ..models.auth import (
     Register,
     Login,
-    validate_email,
-    validate_password,
     get_hashed_password,
     check_password,
     ChangePassword,
 )
 from ..db.mongodb import user_collection
-from ..utils.oauth2 import create_token
+from ..models.auth import generate_token, check_user
+from bson import ObjectId
 
 router = APIRouter()
 
@@ -39,17 +38,27 @@ def register_user(data: Register):
 @router.post("/login", status_code=status.HTTP_200_OK)
 def login_user(data: Login):
     data_dict = data.model_dump()
-    registeredUser = user_collection.find_one({"email": data_dict["email"]})
+    registered_user = user_collection.find_one({"email": data_dict["email"]})
 
-    if not registeredUser or not check_password(
-        registeredUser["password"], data_dict["password"]
+    if not registered_user or not check_password(
+        registered_user["password"], data_dict["password"]
     ):
         return HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Credentials"
         )
 
-    access_token = create_token(data={"user_id": str(registeredUser["_id"])})
-    return {"access_token": access_token, "token_type": "bearer"}
+    user_collection.update_one(
+        {"email": data_dict["email"]}, {"$set": {"is_logged_in": True}}
+    )
+
+    payload = {
+        "_id": str(registered_user["_id"]),
+        "username": registered_user["username"],
+        "email": registered_user["email"],
+        "is_logged_in": True,
+    }
+    token = generate_token(payload)
+    return {"token": token, "detail": "Successfully logged in"}
 
 
 @router.patch("/change-password", status_code=status.HTTP_200_OK)
@@ -66,3 +75,12 @@ def change_password(data: ChangePassword):
     )
     if user.acknowledged:
         return {"detail": "Successfully Updated."}
+
+
+@router.patch("/logout", status_code=status.HTTP_200_OK)
+def log_out(user=Depends(check_user)):
+    updated_user = user_collection.update_one(
+        {"_id": ObjectId(user["_id"])}, {"$set": {"is_logged_in": False}}
+    )
+    if updated_user.acknowledged:
+        return {"detail": "Successfully logout"}

@@ -2,6 +2,10 @@ from pydantic import BaseModel, field_validator
 from argon2 import PasswordHasher
 from fastapi import HTTPException, status
 import re
+import jwt
+from fastapi import Request
+from ..db.mongodb import user_collection
+from bson import ObjectId
 
 
 class Login(BaseModel):
@@ -17,6 +21,7 @@ class Register(BaseModel):
     username: str
     email: str
     password: str
+    is_logged_in: bool = False
 
     @field_validator("*")
     def str_strip(cls, value):
@@ -50,15 +55,6 @@ class Register(BaseModel):
         return value
 
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-
-class TokenData(BaseModel):
-    id: str
-
-
 class ChangePassword(BaseModel):
     email: str
     old_password: str
@@ -75,6 +71,11 @@ class ChangePassword(BaseModel):
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="Fields cannot be empty",
             )
+        return value
+
+    @field_validator("new_password")
+    def password_validation(cls, value):
+        validate_password(value)
         return value
 
 
@@ -124,3 +125,24 @@ def check_password(hashed_password, plaintext):
         return True
     except:
         return False
+
+
+def generate_token(payload):
+    return jwt.encode(payload, "ecommerce", algorithm="HS256")
+
+
+def check_user(request: Request):
+    token = request.headers.get("Authorization")
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
+        )
+
+    payload = jwt.decode(token, "ecommerce", algorithms="HS256")
+    user = user_collection.find_one({"_id": ObjectId(payload["_id"])})
+    if not user["is_logged_in"]:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
+        )
+
+    return payload
