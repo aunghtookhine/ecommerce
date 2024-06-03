@@ -1,6 +1,6 @@
 from pydantic import BaseModel, field_validator
 from argon2 import PasswordHasher
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Form
 import re
 import jwt
 from fastapi import Request
@@ -15,6 +15,10 @@ class Login(BaseModel):
     @field_validator("*")
     def str_strip(cls, value):
         return value.strip()
+
+    @classmethod
+    def form_format(cls, email: str = Form(...), password: str = Form(...)):
+        return cls(email=email, password=password)
 
 
 class Register(BaseModel):
@@ -131,7 +135,7 @@ def generate_token(payload):
     return jwt.encode(payload, "ecommerce", algorithm="HS256")
 
 
-def check_user(request: Request):
+def get_user(request: Request):
     token = request.headers.get("Authorization")
     if not token:
         raise HTTPException(

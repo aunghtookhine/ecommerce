@@ -4,15 +4,15 @@
 
 <div class="container d-flex justify-content-center align-items-center vh-100">
     <div class="w-50 mx-auto p-5 shadow-lg">
-        <h1 class="page-header text-center mb-5">Login</h1>
-        <form>
+        <h1 class="page-header text-center mb-5">Cartopia</h1>
+        <form method="POST" action="/api/auth/login">
             <div class="mb-3">
                 <label for="email" class="form-label fw-bold">Email address</label>
-                <input type="email" class="form-control" id="email">
+                <input type="email" class="form-control" id="email" name="email">
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label fw-bold">Password</label>
-                <input type="password" class="form-control" id="password">
+                <input type="password" class="form-control" id="password" name="password">
             </div>
             <div class="mb-3 d-flex justify-content-between align-items-center">
                 <a href="">Forgot Password</a>

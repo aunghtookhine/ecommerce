@@ -1,21 +1,21 @@
-from fastapi import APIRouter, HTTPException, status, Request, Depends
+from fastapi import APIRouter, HTTPException, status, Depends
 from ..models.product import Product
 from ..db.mongodb import product_collection
 from bson import ObjectId
-import jwt
+from ..models.auth import get_user
 
 router = APIRouter()
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create_product(data: Product):
+def create_product(data: Product, user=Depends(get_user)):
     product_dict = data.model_dump()
     product = product_collection.insert_one(product_dict)
     return {"_id": str(product.inserted_id)}
 
 
 @router.get("/", status_code=status.HTTP_200_OK)
-def find_products():
+def find_products(user=Depends(get_user)):
     cursor = product_collection.find({})
     products = []
     for product in cursor:
@@ -25,7 +25,7 @@ def find_products():
 
 
 @router.get("/{id}", status_code=status.HTTP_200_OK)
-def find_product(id: str):
+def find_product(id: str, user=Depends(get_user)):
     product = product_collection.find_one({"_id": ObjectId(id.strip())})
     if not product:
         raise HTTPException(
@@ -36,7 +36,7 @@ def find_product(id: str):
 
 
 @router.put("/{id}", status_code=status.HTTP_200_OK)
-def update_product(id: str, data: Product):
+def update_product(id: str, data: Product, user=Depends(get_user)):
     product = product_collection.update_one(
         {"_id": ObjectId(id.strip())}, {"$set": data.model_dump()}
     )
@@ -48,9 +48,9 @@ def update_product(id: str, data: Product):
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_product(id: str):
-    product = product_collection.delete_one({"_id": ObjectId(id.strip())})
-    if not product.acknowledged:
+def delete_product(id: str, user=Depends(get_user)):
+    product = product_collection.find_one_and_delete({"_id": ObjectId(id.strip())})
+    if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Product Id"
         )

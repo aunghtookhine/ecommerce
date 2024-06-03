@@ -1,5 +1,5 @@
-from fastapi import APIRouter, status, HTTPException, Depends
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import APIRouter, status, HTTPException, Depends, Request, Form
+from fastapi.responses import Response
 from ..models.auth import (
     Register,
     Login,
@@ -8,8 +8,10 @@ from ..models.auth import (
     ChangePassword,
 )
 from ..db.mongodb import user_collection
-from ..models.auth import generate_token, check_user
+from ..models.auth import generate_token, get_user
 from bson import ObjectId
+from fastapi.responses import RedirectResponse
+
 
 router = APIRouter()
 
@@ -36,7 +38,9 @@ def register_user(data: Register):
 
 
 @router.post("/login", status_code=status.HTTP_200_OK)
-def login_user(data: Login):
+def login_user(
+    request: Request, response: Response, data: Login = Depends(Login.form_format)
+):
     data_dict = data.model_dump()
     registered_user = user_collection.find_one({"email": data_dict["email"]})
 
@@ -58,16 +62,27 @@ def login_user(data: Login):
         "is_logged_in": True,
     }
     token = generate_token(payload)
-    return {"token": token, "detail": "Successfully logged in"}
+    res = RedirectResponse(url="/", status_code=303)
+    res.set_cookie(key="token", value=token)
+    return res
 
 
 @router.patch("/change-password", status_code=status.HTTP_200_OK)
-def change_password(data: ChangePassword):
+def change_password(data: ChangePassword, user=Depends(get_user)):
     data_dict = data.model_dump()
+    if not data_dict["email"] == user["email"]:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="You must enter your email"
+        )
     user_docu = user_collection.find_one({"email": data_dict["email"]})
     if not check_password(user_docu["password"], data_dict["old_password"]):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Wrong Credentials"
+        )
+    if check_password(user_docu["password"], data_dict["new_password"]):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please provide new password",
         )
     new_password = get_hashed_password(data_dict["new_password"])
     user = user_collection.update_one(
@@ -78,7 +93,7 @@ def change_password(data: ChangePassword):
 
 
 @router.patch("/logout", status_code=status.HTTP_200_OK)
-def log_out(user=Depends(check_user)):
+def log_out(user=Depends(get_user)):
     updated_user = user_collection.update_one(
         {"_id": ObjectId(user["_id"])}, {"$set": {"is_logged_in": False}}
     )

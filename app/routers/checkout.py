@@ -1,13 +1,14 @@
-from fastapi import APIRouter, status, HTTPException
+from fastapi import APIRouter, status, HTTPException, Depends
 from ..models.checkout import Checkout, UpdateCheckout
-from ..db.mongodb import product_collection, user_collection, checkout_collection
+from ..db.mongodb import product_collection, checkout_collection
 from bson import ObjectId
+from ..models.auth import get_user
 
 router = APIRouter()
 
 
 @router.post("/", status_code=status.HTTP_200_OK)
-def checkout(data: Checkout):
+def checkout(data: Checkout, user=Depends(get_user)):
     data_dict = data.model_dump()
     product = product_collection.find_one({"_id": ObjectId(data_dict["product_id"])})
     if product["item"] < data_dict["quantity"]:
@@ -39,7 +40,7 @@ def checkout(data: Checkout):
 
 
 @router.put("/decrease", status_code=status.HTTP_200_OK)
-def decrease_quantity(data: UpdateCheckout):
+def decrease_quantity(data: UpdateCheckout, user=Depends(get_user)):
     data_dict = data.model_dump()
     product = product_collection.find_one({"_id": ObjectId(data_dict["product_id"])})
     checkout_collection.update_one(
@@ -60,7 +61,7 @@ def decrease_quantity(data: UpdateCheckout):
 
 
 @router.put("/increase", status_code=status.HTTP_200_OK)
-def increase_quantity(data: UpdateCheckout):
+def increase_quantity(data: UpdateCheckout, user=Depends(get_user)):
     data_dict = data.model_dump()
     product = product_collection.find_one({"_id": ObjectId(data_dict["product_id"])})
     if not product:

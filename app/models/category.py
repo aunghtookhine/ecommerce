@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 
 class Category(BaseModel):
     name: str
-    parent_category: str = "asdfghjkl"
+    parent_category: str = "0"
     img_id: str
 
     @field_validator("*")
