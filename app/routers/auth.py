@@ -33,14 +33,15 @@ def register_user(data: Register):
         )
 
     user_dict["password"] = get_hashed_password(user_dict["password"])
-    user_collection.insert_one(user_dict)
-    return {"msg": "Successfully Registered."}
+    new_user = user_collection.insert_one(user_dict)
+    payload = {"_id": str(new_user.inserted_id)}
+    token = generate_token(payload)
+    return {"detail": "Successfully Registered.", "token": token}
 
 
 @router.post("/login", status_code=status.HTTP_200_OK)
-def login_user(
-    request: Request, response: Response, data: Login = Depends(Login.form_format)
-):
+def login_user(request: Request, response: Response, data: Login):
+    # = Depends(Login.form_format)
     data_dict = data.model_dump()
     registered_user = user_collection.find_one({"email": data_dict["email"]})
 
@@ -55,16 +56,11 @@ def login_user(
         {"email": data_dict["email"]}, {"$set": {"is_logged_in": True}}
     )
 
-    payload = {
-        "_id": str(registered_user["_id"]),
-        "username": registered_user["username"],
-        "email": registered_user["email"],
-        "is_logged_in": True,
-    }
+    payload = {"_id": str(registered_user["_id"])}
     token = generate_token(payload)
-    res = RedirectResponse(url="/", status_code=303)
-    res.set_cookie(key="token", value=token)
-    return res
+    # res = RedirectResponse(url="/", status_code=303)
+    # res.set_cookie(key="token", value=token)
+    return {"detail": "Successfully login", "token": token}
 
 
 @router.patch("/change-password", status_code=status.HTTP_200_OK)
@@ -92,10 +88,13 @@ def change_password(data: ChangePassword, user=Depends(get_user)):
         return {"detail": "Successfully Updated."}
 
 
-@router.patch("/logout", status_code=status.HTTP_200_OK)
+@router.get("/logout", status_code=status.HTTP_200_OK)
 def log_out(user=Depends(get_user)):
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     updated_user = user_collection.update_one(
         {"_id": ObjectId(user["_id"])}, {"$set": {"is_logged_in": False}}
     )
     if updated_user.acknowledged:
-        return {"detail": "Successfully logout"}
+        return {"detail": "Successfully logged out"}
+    # return RedirectResponse(url="/login")

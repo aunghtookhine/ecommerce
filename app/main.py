@@ -16,13 +16,10 @@ app.include_router(checkout.router, prefix="/api/checkout", tags=["checkout"])
 
 
 @app.get("/")
-def root(request: Request):
-    pass
-    # cookie = request.headers.get("cookie")
-    # if not cookie:
-    #     return RedirectResponse(url="/login")
-    # token = cookie.split("=")[]
-    # # return templates.TemplateResponse("home.html", {"request": request})
+def root(request: Request, user=Depends(get_user)):
+    if not user:
+        return RedirectResponse(url="/login")
+    return templates.TemplateResponse("home.html", {"request": request, "user": user})
 
 
 @app.get("/login")

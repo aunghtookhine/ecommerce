@@ -1,6 +1,7 @@
 from pydantic import BaseModel, field_validator
 from argon2 import PasswordHasher
 from fastapi import HTTPException, status, Form
+from fastapi.responses import RedirectResponse
 import re
 import jwt
 from fastapi import Request
@@ -25,7 +26,7 @@ class Register(BaseModel):
     username: str
     email: str
     password: str
-    is_logged_in: bool = False
+    is_logged_in: bool = True
 
     @field_validator("*")
     def str_strip(cls, value):
@@ -136,17 +137,27 @@ def generate_token(payload):
 
 
 def get_user(request: Request):
-    token = request.headers.get("Authorization")
-    if not token:
+    authorization = request.headers.get("Authorization")
+    if not authorization:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
+        )
+    token_data = authorization.split(" ")
+    if len(token_data) == 1:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
+        )
+    type = token_data[0]
+    token = token_data[1]
+    if type != "Bearer":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
         )
 
     payload = jwt.decode(token, "ecommerce", algorithms="HS256")
     user = user_collection.find_one({"_id": ObjectId(payload["_id"])})
-    if not user["is_logged_in"]:
+    if not user or not user["is_logged_in"]:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
         )
-
     return payload
