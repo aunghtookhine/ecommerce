@@ -10,7 +10,6 @@ from ..models.auth import (
 from ..db.mongodb import user_collection
 from ..models.auth import generate_token, get_user
 from bson import ObjectId
-from fastapi.responses import RedirectResponse
 
 
 router = APIRouter()
@@ -57,6 +56,7 @@ def login_user(request: Request, response: Response, data: Login):
     )
 
     payload = {"_id": str(registered_user["_id"])}
+
     token = generate_token(payload)
     # res = RedirectResponse(url="/", status_code=303)
     # res.set_cookie(key="token", value=token)
@@ -66,6 +66,7 @@ def login_user(request: Request, response: Response, data: Login):
 @router.patch("/change-password", status_code=status.HTTP_200_OK)
 def change_password(data: ChangePassword, user=Depends(get_user)):
     data_dict = data.model_dump()
+    user = user_collection.find_one({"_id": ObjectId(user["_id"])})
     if not data_dict["email"] == user["email"]:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="You must enter your email"
@@ -90,11 +91,9 @@ def change_password(data: ChangePassword, user=Depends(get_user)):
 
 @router.get("/logout", status_code=status.HTTP_200_OK)
 def log_out(user=Depends(get_user)):
-    if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     updated_user = user_collection.update_one(
         {"_id": ObjectId(user["_id"])}, {"$set": {"is_logged_in": False}}
     )
-    if updated_user.acknowledged:
+    if updated_user.matched_count:
         return {"detail": "Successfully logged out"}
     # return RedirectResponse(url="/login")

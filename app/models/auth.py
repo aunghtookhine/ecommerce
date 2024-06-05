@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, Field, EmailStr, constr
 from argon2 import PasswordHasher
 from fastapi import HTTPException, status, Form
 from fastapi.responses import RedirectResponse
@@ -17,14 +17,14 @@ class Login(BaseModel):
     def str_strip(cls, value):
         return value.strip()
 
-    @classmethod
-    def form_format(cls, email: str = Form(...), password: str = Form(...)):
-        return cls(email=email, password=password)
+    # @classmethod
+    # def form_format(cls, email: str = Form(...), password: str = Form(...)):
+    #     return cls(email=email, password=password)
 
 
 class Register(BaseModel):
     username: str
-    email: str
+    email: EmailStr
     password: str
     is_logged_in: bool = True
 
@@ -46,13 +46,13 @@ class Register(BaseModel):
             )
         return value
 
-    @field_validator("email")
-    def email_validation(cls, value):
-        if not validate_email(value):
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid Email"
-            )
-        return value
+    # @field_validator("email")
+    # def email_validation(cls, value):
+    #     if not validate_email(value):
+    #         raise HTTPException(
+    #             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid Email"
+    #         )
+    #     return value
 
     @field_validator("password")
     def password_validation(cls, value):
@@ -84,9 +84,9 @@ class ChangePassword(BaseModel):
         return value
 
 
-def validate_email(email):
-    regex = "[\w\.-]+@[\w\.-]+\.\w{2,4}"
-    return re.match(regex, email)
+# def validate_email(email):
+#     regex = "[\w\.-]+@[\w\.-]+\.\w{2,4}"
+#     return re.match(regex, email)
 
 
 def validate_password(password):
@@ -142,7 +142,7 @@ def get_user(request: Request):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
         )
-    token_data = authorization.split(" ")
+    token_data = authorization.strip().split(" ")
     if len(token_data) == 1:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"

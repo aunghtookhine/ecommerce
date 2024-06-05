@@ -36,11 +36,11 @@ def find_product(id: str, user=Depends(get_user)):
 
 
 @router.put("/{id}", status_code=status.HTTP_200_OK)
-def update_product(id: str, data: Product, user=Depends(get_user)):
-    product = product_collection.update_one(
+def update_product(id: str, data: Product):
+    product = product_collection.find_one_and_update(
         {"_id": ObjectId(id.strip())}, {"$set": data.model_dump()}
     )
-    if not product.matched_count:
+    if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Product Id"
         )
