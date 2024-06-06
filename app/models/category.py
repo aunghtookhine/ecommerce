@@ -4,8 +4,8 @@ from fastapi import HTTPException, status
 
 class Category(BaseModel):
     name: str
-    parent_category: str = "0"
-    img_id: str
+    parent_id: str = None
+    image_id: str
 
     @field_validator("*")
     def str_strip(cls, value):

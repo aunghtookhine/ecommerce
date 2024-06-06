@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 from dotenv import load_dotenv
 import os
 
-load_dotenv()
+load_dotenv(override=True)
 
 try:
     client = MongoClient(os.getenv("MONGO_URI"))

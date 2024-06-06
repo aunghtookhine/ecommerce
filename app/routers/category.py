@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status, HTTPException, Depends
 from ..models.category import Category
-from ..db.mongodb import category_collection
+from ..db.mongodb import image_collection, category_collection, db
 from bson import ObjectId
 from ..models.auth import get_user
 
@@ -9,9 +9,31 @@ router = APIRouter()
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def create_category(data: Category, user=Depends(get_user)):
-    category_dict = data.model_dump()
-    category = category_collection.insert_one(category_dict)
-    return {"_id": str(category.inserted_id)}
+    data_dict = data.model_dump()
+    if data_dict["parent_id"]:
+        data_dict["parent_id"] = {
+            "$ref": "categories",
+            "$id": ObjectId(data_dict["parent_id"]),
+            "$db": "ecommerce",
+        }
+    category = category_collection.insert_one(
+        {
+            "name": data_dict["name"],
+            "parent_id": data_dict["parent_id"],
+            "image": {
+                "$ref": "images",
+                "$id": data_dict["image_id"],
+                "$db": "ecommerce",
+            },
+        }
+    )
+
+    # category_with_image = category_collection.find_one({"_id": category.inserted_id})
+    # image_reference = category_with_image["image"]
+    # image = image_collection.find_one({"_id": ObjectId(image_reference.id)})
+    # print(image)
+    # return
+    # return {"_id": str(category.inserted_id)}
 
 
 @router.get("/", status_code=status.HTTP_200_OK)

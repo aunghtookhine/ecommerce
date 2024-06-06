@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends, status, Form, UploadFile, HTTPException, File
 from ..db.mongodb import image_collection
 from ..models.auth import get_user
-from bson import Binary, ObjectId
-from fastapi.responses import StreamingResponse
+from bson import ObjectId
 import os
+import hashlib
+import datetime
 
 router = APIRouter()
 
-IMAGE_DIR = "assets"
+IMAGE_DIR = "static/assets"
 
 
 @router.post("/")
@@ -20,17 +21,28 @@ async def upload(name: str = Form(...), file: UploadFile = File(...)):
             detail="Unavailable image format",
         )
     contents = await file.read()
-    os.makedirs(IMAGE_DIR, exist_ok=True)
-    path = os.path.join(IMAGE_DIR, file.filename)
-    isImgUrl = image_collection.find_one({"img_url": path})
-    if isImgUrl:
+    checksum = hashlib.md5(contents).hexdigest()
+
+    image = image_collection.find_one({"checksum": checksum})
+    if image:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Duplicate image"
         )
+
+    date = datetime.datetime.now().strftime("%d-%b-%Y-%H:%M:%S")
+    _, file_ext = os.path.splitext(file.filename)
+    file_name = f"{name.strip().lower()}-{date}{file_ext}"
+
+    os.makedirs(IMAGE_DIR, exist_ok=True)
+    path = os.path.join(IMAGE_DIR, file_name)
+
     with open(path, "wb") as f:
         f.write(contents)
 
-    img = image_collection.insert_one({"name": name, "img_url": path})
+    path = path.replace("static/", "")
+    img = image_collection.insert_one(
+        {"name": name.strip().lower(), "checksum": checksum, "img_url": path}
+    )
     return {"_id": str(img.inserted_id)}
 
 
@@ -44,13 +56,11 @@ def find_images():
     return images
 
 
-@router.get("/{img_name}")
-def find_image(img_name: str):
-    url = f"http://127.0.0.1:8000/app/images/{img_name}"
-    return url
+@router.get("/{id}")
+def find_image(id: str):
     image = image_collection.find_one({"_id": ObjectId(id.strip())})
     if not image:
-        raise HTTPException(
+        return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Invalid image id"
         )
     image["_id"] = str(image["_id"])
