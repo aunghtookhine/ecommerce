@@ -65,3 +65,14 @@ def find_image(id: str):
         )
     image["_id"] = str(image["_id"])
     return image
+
+
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def remove_image(id: str):
+    image = image_collection.find_one_and_delete({"_id": ObjectId(id.strip())})
+    if not image:
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Invalid image id"
+        )
+    img_path = os.path.join("static", image["img_url"])
+    os.remove(img_path)

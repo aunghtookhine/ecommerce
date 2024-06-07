@@ -1,8 +1,10 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from ..models.product import Product
-from ..db.mongodb import product_collection
-from bson import ObjectId
+from ..db.mongodb import product_collection, db
+from bson import ObjectId, DBRef
 from ..models.auth import get_user
+from ..models.category import category_dereference
+from ..models.image import image_dereference
 
 router = APIRouter()
 
@@ -10,6 +12,13 @@ router = APIRouter()
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def create_product(data: Product, user=Depends(get_user)):
     product_dict = data.model_dump()
+    product_dict["category"] = DBRef(
+        "categories", ObjectId(product_dict["category"]), "ecommerce"
+    )
+    images = []
+    for image in product_dict["images"]:
+        images.append(DBRef("images", ObjectId(image), "ecommerce"))
+    product_dict["images"] = images
     product = product_collection.insert_one(product_dict)
     return {"_id": str(product.inserted_id)}
 
@@ -32,6 +41,13 @@ def find_product(id: str, user=Depends(get_user)):
             status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Category Id"
         )
     product["_id"] = str(product["_id"])
+    print(product["category"])
+    return
+    product["category"] = category_dereference(product["category"])
+    images = []
+    for image in product["images"]:
+        images.append(image_dereference(image))
+    product["images"] = images
     return product
 
 

@@ -1,5 +1,7 @@
 from pydantic import BaseModel, field_validator
 from fastapi import HTTPException, status
+from ..db.mongodb import db
+from ..models.image import image_dereference
 
 
 class Category(BaseModel):
@@ -19,3 +21,13 @@ class Category(BaseModel):
                 detail="Fields cannot be empty",
             )
         return value
+
+
+def category_dereference(category_dbref):
+    category = db.dereference(category_dbref)
+    if category:
+        category["_id"] = str(category["_id"])
+        if category["parent_category"]:
+            category["parent_category"] = category_dbref(category["parent_category"])
+        category["image"] = image_dereference(category["image"])
+    return category

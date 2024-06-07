@@ -4,12 +4,12 @@ from fastapi import HTTPException, status
 
 class Product(BaseModel):
     name: str
-    category_id: str
+    category: str
     description: str
     item: int
     feature_product: bool = False
     price: int
-    img_ids: list[str]
+    images: list[str]
 
     @field_validator("*")
     def str_strip(cls, value):
