@@ -1,7 +1,6 @@
-from pydantic import BaseModel, field_validator, Field, EmailStr, constr
+from pydantic import BaseModel, field_validator, EmailStr
 from argon2 import PasswordHasher
-from fastapi import HTTPException, status, Form
-from fastapi.responses import RedirectResponse
+from fastapi import HTTPException, status
 import re
 import jwt
 from fastapi import Request

@@ -5,7 +5,6 @@ from bson import ObjectId
 import os
 import hashlib
 import datetime
-from PIL import Image
 from dotenv import load_dotenv
 import os
 
@@ -36,7 +35,9 @@ async def upload(
         )
     date = datetime.datetime.now().strftime("%d-%b-%Y-%H:%M:%S")
     _, file_ext = os.path.splitext(file.filename)
-    file_name = f"{name.strip().lower()}-{date}{file_ext}"
+    name = name.strip().lower().split()
+    name = "-".join(name)
+    file_name = f"{name}-{date}{file_ext}"
     os.makedirs(os.getenv("CATEGORY_DIR"), exist_ok=True)
     os.makedirs(os.getenv("PRODUCT_DIR"), exist_ok=True)
     path = os.path.join(os.getenv("CATEGORY_DIR"), file_name)

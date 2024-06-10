@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from ..models.product import Product
-from ..db.mongodb import product_collection, db
+from ..db.mongodb import product_collection
 from bson import ObjectId, DBRef
 from ..models.auth import get_user
 from ..models.category import category_dereference
@@ -76,7 +76,7 @@ def update_product(id: str, data: Product):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Product Id"
         )
-    return {"msg": "Successfully Updated"}
+    return {"detail": "Successfully Updated"}
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)

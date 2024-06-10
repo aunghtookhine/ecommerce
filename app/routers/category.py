@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status, HTTPException, Depends
 from ..models.category import Category
-from ..db.mongodb import image_collection, category_collection, db
+from ..db.mongodb import category_collection, db
 from bson import ObjectId, DBRef
 from ..models.auth import get_user
 from ..models.image import image_dereference
