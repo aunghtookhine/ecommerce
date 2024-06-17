@@ -6,6 +6,7 @@ import jwt
 from fastapi import Request
 from ..db.mongodb import user_collection
 from bson import ObjectId
+from ..db.mongodb import db
 
 
 class Login(BaseModel):
@@ -160,3 +161,10 @@ def get_user(request: Request):
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
         )
     return payload
+
+
+def user_dereference(user_dbref):
+    user = db.dereference(user_dbref)
+    user["_id"] = str(user["_id"])
+    del user["password"]
+    return user
