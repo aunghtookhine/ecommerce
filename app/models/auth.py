@@ -3,10 +3,11 @@ from argon2 import PasswordHasher
 from fastapi import HTTPException, status
 import re
 import jwt
-from fastapi import Request
+from fastapi import Request, Form
 from ..db.mongodb import user_collection
 from bson import ObjectId
 from ..db.mongodb import db
+from fastapi.responses import JSONResponse
 
 
 class Login(BaseModel):
@@ -16,10 +17,6 @@ class Login(BaseModel):
     @field_validator("*")
     def str_strip(cls, value):
         return value.strip()
-
-    # @classmethod
-    # def form_format(cls, email: str = Form(...), password: str = Form(...)):
-    #     return cls(email=email, password=password)
 
 
 class Register(BaseModel):
@@ -31,33 +28,6 @@ class Register(BaseModel):
     @field_validator("*")
     def str_strip(cls, value):
         return value.strip()
-
-    @field_validator("username")
-    def username_validation(cls, value):
-        if not value:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Username must be provided",
-            )
-        if len(value.split(" ")) > 1:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Username must be a word",
-            )
-        return value
-
-    # @field_validator("email")
-    # def email_validation(cls, value):
-    #     if not validate_email(value):
-    #         raise HTTPException(
-    #             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid Email"
-    #         )
-    #     return value
-
-    @field_validator("password")
-    def password_validation(cls, value):
-        validate_password(value)
-        return value
 
 
 class ChangePassword(BaseModel):
@@ -80,7 +50,9 @@ class ChangePassword(BaseModel):
 
     @field_validator("new_password")
     def password_validation(cls, value):
-        validate_password(value)
+        error = validate_password(value)
+        if error:
+            return error
         return value
 
 
@@ -89,31 +61,44 @@ class ChangePassword(BaseModel):
 #     return re.match(regex, email)
 
 
+def validate_username(username):
+    if not username:
+        return JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            content={"username": "Username must be provided"},
+        )
+    if len(username.split(" ")) > 1:
+        return JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            content={"username": "Username must be a word"},
+        )
+
+
 def validate_password(password):
     if len(password) < 8:
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Password must have at least 8 characters",
+            content={"password": "Password must have at least 8 characters"},
         )
     if not re.search("(?=.*[A-Z])", password):
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Password must have at least one uppercase letter",
+            content={"password": "Password must have at least one uppercase letter"},
         )
     if not re.search("(?=.*?[a-z])", password):
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Password must have at least one lowercase letter",
+            content={"password": "Password must have at least one lowercase letter"},
         )
     if not re.search("(?=.*?[0-9])", password):
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Password must have at least one number",
+            content={"password": "Password must have at least one number"},
         )
     if not re.search("(?=.*?[#?!@$%^&*-])", password):
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Password must have at least one special character",
+            content={"password": "Password must have at least one special character"},
         )
 
 

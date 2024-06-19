@@ -1,7 +1,9 @@
 from fastapi import FastAPI, Request, Depends
+
 from .routers import auth, category, product, image, checkout
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from .models.auth import get_user
 
 
 templates = Jinja2Templates(directory="app/templates")
@@ -18,9 +20,6 @@ app.include_router(checkout.router, prefix="/api/checkouts", tags=["checkout"])
 
 @app.get("/")
 def root(request: Request):
-    # user=Depends(get_user)
-    # if not user:
-    #     return RedirectResponse(url="/login")
     return templates.TemplateResponse("home.html", {"request": request})
 
 

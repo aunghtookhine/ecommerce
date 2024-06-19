@@ -1,0 +1,23 @@
+<nav class="navbar navbar-success bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand">Cartopia</a>
+        <button class="btn btn-outline-danger" type="submit" id="logoutBtn">Logout</button>
+    </div>
+</nav>
+<script>
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method:"GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      const {detail} = await response.json()
+      localStorage.clear()
+      window.location.href = '/login'
+    } catch (error) {
+      console.log("Error:", error)
+    }
+  });
+</script>

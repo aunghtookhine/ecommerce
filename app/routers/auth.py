@@ -1,36 +1,46 @@
-from fastapi import APIRouter, status, HTTPException, Depends, Request
-from fastapi.responses import Response
+from fastapi import APIRouter, status, HTTPException, Depends, Request, Form
+from fastapi.responses import Response, JSONResponse
 from ..models.auth import (
     Register,
     Login,
     get_hashed_password,
     check_password,
     ChangePassword,
+    validate_password,
+    validate_username,
 )
 from ..db.mongodb import user_collection
 from ..models.auth import generate_token, get_user
 from bson import ObjectId
-
+from fastapi.templating import Jinja2Templates
 
 router = APIRouter()
+
+templates = Jinja2Templates(directory="app/templates")
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def register_user(data: Register):
     user_dict = data.model_dump()
+    error = validate_username(user_dict["username"])
+    if error:
+        return error
     isUsername = user_collection.find_one({"username": user_dict["username"]})
     if isUsername:
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Username can't be duplicated",
+            content={"username": "Username can't be duplicated"},
         )
 
     isEmail = user_collection.find_one({"email": user_dict["email"]})
     if isEmail:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="Email can't be duplicated"
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            content={"email": "Email can't be duplicated"},
         )
-
+    error = validate_password(user_dict["password"])
+    if error:
+        return error
     user_dict["password"] = get_hashed_password(user_dict["password"])
     new_user = user_collection.insert_one(user_dict)
     payload = {"_id": str(new_user.inserted_id)}
@@ -40,27 +50,20 @@ def register_user(data: Register):
 
 @router.post("/login", status_code=status.HTTP_200_OK)
 def login_user(request: Request, response: Response, data: Login):
-    # = Depends(Login.form_format)
     data_dict = data.model_dump()
     registered_user = user_collection.find_one({"email": data_dict["email"]})
 
     if not registered_user or not check_password(
         registered_user["password"], data_dict["password"]
     ):
-        return HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Credentials"
-        )
-
-    user_collection.update_one(
+        return JSONResponse(content={"error": "Invalid Credentials"}, status_code=401)
+    user = user_collection.update_one(
         {"email": data_dict["email"]}, {"$set": {"is_logged_in": True}}
     )
-
     payload = {"_id": str(registered_user["_id"])}
-
     token = generate_token(payload)
-    # res = RedirectResponse(url="/", status_code=303)
-    # res.set_cookie(key="token", value=token)
-    return {"detail": "Successfully login", "token": token}
+    if user.matched_count:
+        return {"detail": "Successfully login", "token": token}
 
 
 @router.patch("/change-password", status_code=status.HTTP_200_OK)
