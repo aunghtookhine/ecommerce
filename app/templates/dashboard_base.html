@@ -18,7 +18,10 @@
     <title>Cartopia</title>
   </head>
   <body>
-    {% include 'nav_bar.html' %} {% block content
-    %} {% endblock content %}
+       <div class="d-flex vh-100 vw-100 p-2 bg-dark">
+        {% include 'sidebar.html' %}
+        {% block content %} 
+        {% endblock content %}
+       </div>
   </body>
 </html>

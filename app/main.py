@@ -4,6 +4,7 @@ from .routers import auth, category, product, image, checkout
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from .models.auth import get_user
+from .routers.category import find_categories
 
 
 templates = Jinja2Templates(directory="app/templates")
@@ -18,9 +19,27 @@ app.include_router(image.router, prefix="/api/images", tags=["image"])
 app.include_router(checkout.router, prefix="/api/checkouts", tags=["checkout"])
 
 
-@app.get("/")
-def root(request: Request):
+@app.get("/dashboard")
+def home_page(request: Request):
     return templates.TemplateResponse("home.html", {"request": request})
+
+
+@app.get("/dashboard/categories")
+def category_page(request: Request):
+    categories = find_categories()
+    return templates.TemplateResponse(
+        "categories.html", {"request": request, "categories": categories}
+    )
+
+
+@app.get("/dashboard/products")
+def product_page(request: Request):
+    return templates.TemplateResponse("products.html", {"request": request})
+
+
+@app.get("/dashboard/users")
+def user_page(request: Request):
+    return templates.TemplateResponse("users.html", {"request": request})
 
 
 @app.get("/login")

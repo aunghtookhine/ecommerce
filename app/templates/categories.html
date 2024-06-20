@@ -1,0 +1,39 @@
+{% extends 'dashboard_base.html' %} {% block content %}
+
+<div class="d-flex flex-column w-100 mx-2">
+  <div class="bg-white p-3 rounded-3 mb-2 d-flex justify-content-between">
+    <h2>Categories</h2>
+    <button class="btn btn-success">Create</button>
+  </div>
+  <div class="card">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col" class="p-3">Name</th>
+          <th scope="col" class="p-3">Parent Category</th>
+          <th scope="col" class="p-3">Image</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for category in categories %}
+        <tr>
+          <td class="p-3">{{ category.name }}</td>
+          <td class="p-3">
+            {% if category.parent_category %} 
+                {{ category.parent_category.name }} 
+            {% else %}
+                {{category.parent_category}}
+            {% endif %}
+          </td>
+          <td class="p-3">
+            
+            <img src="{{category.image.img_url}}" alt="" width="100" height="100">
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock content %}

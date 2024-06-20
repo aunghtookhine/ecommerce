@@ -45,7 +45,7 @@ async def upload(
         path = os.path.join(os.getenv("PRODUCT_DIR"), file_name)
     with open(path, "wb") as f:
         f.write(contents)
-    path = path.replace("static/", "")
+    path = path.replace("static/", "/static/")
     img = image_collection.insert_one(
         {"name": name.strip().lower(), "checksum": checksum, "img_url": path}
     )
