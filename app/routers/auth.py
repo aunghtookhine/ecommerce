@@ -1,5 +1,5 @@
 from fastapi import APIRouter, status, HTTPException, Depends, Request, Form
-from fastapi.responses import Response, JSONResponse
+from fastapi.responses import RedirectResponse, JSONResponse
 from ..models.auth import (
     Register,
     Login,
@@ -49,7 +49,7 @@ def register_user(data: Register):
 
 
 @router.post("/login", status_code=status.HTTP_200_OK)
-def login_user(request: Request, response: Response, data: Login):
+def login_user(data: Login):
     data_dict = data.model_dump()
     registered_user = user_collection.find_one({"email": data_dict["email"]})
 
@@ -99,4 +99,3 @@ def log_out(user=Depends(get_user)):
     )
     if updated_user.matched_count:
         return {"detail": "Successfully logged out"}
-    # return RedirectResponse(url="/login")

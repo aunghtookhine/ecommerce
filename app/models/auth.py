@@ -125,25 +125,25 @@ def get_user(request: Request):
     authorization = request.headers.get("Authorization")
     if not authorization:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized1"
         )
     token_data = authorization.strip().split(" ")
     if len(token_data) == 1:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized2"
         )
     type = token_data[0]
     token = token_data[1]
     if type != "Bearer":
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized3"
         )
 
     payload = jwt.decode(token, "ecommerce", algorithms="HS256")
     user = user_collection.find_one({"_id": ObjectId(payload["_id"])})
     if not user or not user["is_logged_in"]:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized4"
         )
     return payload
 

@@ -1,0 +1,40 @@
+{% extends 'main_base.html'%}
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-around">
+        {% for product in products %}
+        <div class="card" style="width: 18rem">
+            <img class="card-img-top" src="{{product.images[0].img_url}}" alt="Product Image" />
+            <div class="card-body">
+                <h5 class="card-title">{{product.name}}</h5>
+                <p class="card-text">{{product.description}}</p>
+                <a href="#" class="btn btn-dark" onclick="handleAddToCart('{{product._id}}')">Add to Cart</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+</body>
+<script>
+    const handleAddToCart = async (product_id) => {
+        try {
+            const response = await fetch("/api/cart/", {
+                method: "POST",
+                headers: {
+                    "Content-type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    product_id: product_id,
+                    qty: 1,
+                }),
+            });
+            const data = await response.json();
+            window.location.reload()
+        } catch (error) {
+            console.log(error);
+        }
+    };
+</script>
+
+{% endblock %}

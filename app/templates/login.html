@@ -49,7 +49,7 @@
         passwordError.innerHTML = `<p>${error}</p>`
       } else {
         localStorage.setItem('token', token)
-        window.location.href = '/dashboard'
+        window.location.href = '/'
       }
     } catch (error) {
       console.log("Error:", error)
