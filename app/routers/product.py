@@ -86,3 +86,15 @@ def delete_product(id: str, user=Depends(get_user)):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Product Id"
         )
+
+
+@router.patch("/{id}", status_code=status.HTTP_200_OK)
+def update_stock(id: str, data: int, user=Depends(get_user)):
+    result = product_collection.find_one_and_update(
+        {"_id": ObjectId(id.strip())}, {"$inc": {"item": data}}
+    )
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Product Id"
+        )
+    return {"detail": "Successfully Updated Stock"}

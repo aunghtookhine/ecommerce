@@ -35,7 +35,8 @@ def root(request: Request):
     for qty in cart_items.values():
         total_qty += qty
     return templates.TemplateResponse(
-        "index.html", {"request": request, "products": products, "total_qty": total_qty}
+        "index.html",
+        {"request": request, "products": products, "total_qty": total_qty},
     )
 
 
@@ -49,9 +50,10 @@ def cart_page(request: Request):
         product["qty"] = qty
         total += product["price"] * product["qty"]
         products.append(product)
-
+    message = get_message(request)
     return templates.TemplateResponse(
-        "cart.html", {"request": request, "products": products, "total": total}
+        "cart.html",
+        {"request": request, "products": products, "total": total, "message": message},
     )
 
 
@@ -86,6 +88,13 @@ def login(request: Request):
 @app.get("/register")
 def login(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
+
+
+@app.get("/api/message")
+def get_message(request: Request):
+    session = request.session
+    message = session.get("message")
+    return {"message": message}
 
 
 # generate json file for api

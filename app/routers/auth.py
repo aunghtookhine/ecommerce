@@ -11,6 +11,7 @@ from ..models.auth import (
 )
 from ..db.mongodb import user_collection
 from ..models.auth import generate_token, get_user
+from ..routers.cart import clear_session
 from bson import ObjectId
 from fastapi.templating import Jinja2Templates
 
@@ -93,9 +94,10 @@ def change_password(data: ChangePassword, user=Depends(get_user)):
 
 
 @router.get("/logout", status_code=status.HTTP_200_OK)
-def log_out(user=Depends(get_user)):
+def log_out(request: Request, user=Depends(get_user)):
     updated_user = user_collection.update_one(
         {"_id": ObjectId(user["_id"])}, {"$set": {"is_logged_in": False}}
     )
     if updated_user.matched_count:
+        clear_session(request)
         return {"detail": "Successfully logged out"}

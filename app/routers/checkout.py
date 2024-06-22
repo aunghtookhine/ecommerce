@@ -1,15 +1,23 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from ..models.auth import get_user, user_dereference
 from ..models.checkout import Checkout
 from ..db.mongodb import user_collection, product_collection, checkout_collection
 from bson import ObjectId, DBRef
 from ..models.product import product_dereference
+from pymongo import InsertOne
 
 router = APIRouter()
 
 
 @router.post("/")
-def add_new_item(data: Checkout, user=Depends(get_user)):
+def add_new_item(request: Request, data: Checkout, user=Depends(get_user)):
+    # session = request.session
+    # cart = session.get('cart')
+    # operations = []
+    # for product_id, quantity in cart.items():
+    #     product = DBRef('products', ObjectId(product_id), 'ecommerce')
+    #     operations.append(InsertOne({}))
+    # return
     data_dict = data.model_dump()
     user_dbref = DBRef("users", ObjectId(user["_id"]), "ecommerce")
     product = product_collection.find_one({"_id": ObjectId(data_dict["product"])})

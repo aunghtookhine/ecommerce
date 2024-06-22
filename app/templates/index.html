@@ -29,8 +29,19 @@
                     qty: 1,
                 }),
             });
-            const data = await response.json();
-            window.location.reload()
+            const {detail, success} = await response.json();
+            const toast = document.getElementById('toast')
+            const toastMessage = document.getElementById('toast-message')
+            if(success){
+                window.location.reload()
+            }else{
+                toast.classList.add('show')
+                toastMessage.innerHTML = detail
+                setTimeout(function() {
+                    toast.classList.remove('show');
+                    toastMessage.innerHTML = ''
+                }, 5000);
+            }
         } catch (error) {
             console.log(error);
         }
