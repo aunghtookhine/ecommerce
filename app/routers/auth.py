@@ -21,7 +21,7 @@ templates = Jinja2Templates(directory="app/templates")
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
-def register_user(data: Register):
+def register_user(request: Request, data: Register):
     user_dict = data.model_dump()
     error = validate_username(user_dict["username"])
     if error:
@@ -46,11 +46,12 @@ def register_user(data: Register):
     new_user = user_collection.insert_one(user_dict)
     payload = {"_id": str(new_user.inserted_id)}
     token = generate_token(payload)
+    request.session["user_id"] = str(new_user.inserted_id)
     return {"detail": "Successfully Registered.", "token": token}
 
 
 @router.post("/login", status_code=status.HTTP_200_OK)
-def login_user(data: Login):
+def login_user(request: Request, data: Login):
     data_dict = data.model_dump()
     registered_user = user_collection.find_one({"email": data_dict["email"]})
 
@@ -64,6 +65,7 @@ def login_user(data: Login):
     payload = {"_id": str(registered_user["_id"])}
     token = generate_token(payload)
     if user.matched_count:
+        request.session["user_id"] = str(registered_user["_id"])
         return {"detail": "Successfully login", "token": token}
 
 

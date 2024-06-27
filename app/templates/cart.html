@@ -107,7 +107,10 @@
           method: "POST",
           headers: {'Content-type': 'application/json', Authorization: `Bearer ${token}`}
         })
-        const data = await response.json()        
+        const {detail, success} = await response.json()
+        if(success){
+          window.location.href = '/checkout'
+        }  
       } catch (error) {
         console.log(error)
       }

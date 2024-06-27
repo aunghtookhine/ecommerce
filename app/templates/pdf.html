@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice - {{checkout._id}}</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <div class="p-5">
+            <div class="d-flex justify-content-between align-items-end">
+              <div>
+                <h1>CARTOPIA</h1>
+                <h5 class="text-muted">Invoice - {{checkout._id}}</h5>
+              </div>
+              <div class="text-end">
+                <h5>BILL TO:</h5>
+                <h5 class="text-muted">{{checkout.user.email}}</h5>
+              </div>
+            </div>
+
+            <hr class="my-5" />
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th scope="col" class="w-25">DESCRIPTION</th>
+                  <th scope="col" class="text-center">QUANTITY</th>
+                  <th scope="col" class="text-center">PRICE</th>
+                  <th scope="col" class="text-center">TOTAL</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for detail in checkout.detail %}
+                <tr>
+                  <td>{{detail.product.name}}</td>
+                  <td class="text-center">{{detail.quantity}}</td>
+                  <td class="text-center">{{detail.product.price}} Ks</td>
+                  <td class="text-center">
+                    {{detail.quantity * detail.product.price}} Ks
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+              <tfoot>
+                <tr class="text-center">
+                  <td></td>
+                  <td></td>
+                  <th>TOTAL AMOUNT</th>
+                  <th>{{checkout.total}} Ks</th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        window.print()
+        window.onafterprint = () => {
+            history.back()
+        }
+    });
+  </script>
+</html>

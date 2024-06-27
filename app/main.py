@@ -7,7 +7,7 @@ from .routers.category import find_categories
 from .routers.product import find_products, find_product
 from .routers.cart import get_cart_items
 from starlette.middleware.sessions import SessionMiddleware
-from fastapi.security import HTTPBearer
+from .routers.checkout import find_checkouts, find_checkout
 
 
 templates = Jinja2Templates(directory="app/templates")
@@ -24,7 +24,26 @@ app.include_router(image.router, prefix="/api/images", tags=["image"])
 app.include_router(cart.router, prefix="/api/cart", tags=["Cart"])
 app.include_router(checkout.router, prefix="/api/checkouts", tags=["checkout"])
 
-bearer_scheme = HTTPBearer()
+
+@app.get("/products/{product_id}")
+def product_detail_page(request: Request, product_id: str):
+    product = find_product(product_id)
+    cart_items = get_cart_items(request)
+    total_qty = 0
+    for qty in cart_items.values():
+        total_qty += qty
+    return templates.TemplateResponse(
+        "/website/product_detail.html",
+        {"request": request, "product": product, "total_qty": total_qty},
+    )
+
+
+@app.get("/pdf/{checkout_id}")
+def pdf(request: Request, checkout_id: str):
+    checkout = find_checkout(checkout_id)
+    return templates.TemplateResponse(
+        "pdf.html", {"request": request, "checkout": checkout}
+    )
 
 
 @app.get("/")
@@ -54,6 +73,19 @@ def cart_page(request: Request):
     return templates.TemplateResponse(
         "cart.html",
         {"request": request, "products": products, "total": total, "message": message},
+    )
+
+
+@app.get("/checkout")
+def checkout_page(request: Request):
+    checkouts = find_checkouts(request)
+    cart_items = get_cart_items(request)
+    total_qty = 0
+    for qty in cart_items.values():
+        total_qty += qty
+    return templates.TemplateResponse(
+        "checkout.html",
+        {"request": request, "checkouts": checkouts, "total_qty": total_qty},
     )
 
 

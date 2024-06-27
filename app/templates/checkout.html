@@ -1,0 +1,55 @@
+{% extends 'main_base.html' %} {% block content %}
+<div class="container">
+  <h1 class="my-5">YOUR ORDER</h1>
+  <div class="row">
+    <div class="col-12">
+      {% if(checkouts == [])%}
+      <h2>YOU HAVE NO ACTIVE ORDER</h2>
+      <p>
+        Once you order something, it will appear here. Ready to get started?
+      </p>
+      <a href="/" class="btn btn-dark">Get Started</a>
+      {% endif %} {% for checkout in checkouts %}
+      <div class="border p-3 rounded mb-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <span><strong>Order ID</strong> : {{checkout._id}}</span><br />
+            <span><strong>Total</strong> : {{checkout.total}} Ks</span>
+          </div>
+          <a href="/pdf/{{checkout._id}}" class="btn btn-outline-dark">Print</a>
+        </div>
+        <hr>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Product Image</th>
+              <th scope="col">Product Name</th>
+              <th scope="col">Quantity</th>
+              <th scope="col">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for detail in checkout.detail %}
+            <tr>
+              <td class="w-25">
+                <img
+                  width="100"
+                  src="{{detail.product.images[0].img_url}}"
+                  class="img-fluid img-thumbnail"
+                  alt="{{detail.product.name}}"
+                />
+              </td>
+              <td>{{detail.product.name}}</td>
+              <td>{{detail.quantity}}</td>
+              <td>{{detail.product.price * detail.quantity}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock content %}
+

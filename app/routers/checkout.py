@@ -1,117 +1,64 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from ..models.auth import get_user, user_dereference
 from ..models.checkout import Checkout
-from ..db.mongodb import user_collection, product_collection, checkout_collection
-from bson import ObjectId, DBRef
 from ..models.product import product_dereference
-from pymongo import InsertOne
+from ..db.mongodb import product_collection, checkout_collection
+from bson import ObjectId, DBRef
 
 router = APIRouter()
 
 
 @router.post("/")
-def add_new_item(request: Request, data: Checkout, user=Depends(get_user)):
-    # session = request.session
-    # cart = session.get('cart')
-    # operations = []
-    # for product_id, quantity in cart.items():
-    #     product = DBRef('products', ObjectId(product_id), 'ecommerce')
-    #     operations.append(InsertOne({}))
-    # return
-    data_dict = data.model_dump()
+def create_checkout(request: Request, user=Depends(get_user)):
     user_dbref = DBRef("users", ObjectId(user["_id"]), "ecommerce")
-    product = product_collection.find_one({"_id": ObjectId(data_dict["product"])})
-    if not product:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    if not product["item"]:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Insufficient product"
-        )
-    product_dbref = DBRef("products", ObjectId(product["_id"]), "ecommerce")
-    checkout = checkout_collection.find_one({"user": user_dbref})
-    if not checkout:
-        new_checkout = checkout_collection.insert_one(
-            {"user": user_dbref, "products": [product_dbref], "total": product["price"]}
-        )
-        if new_checkout.inserted_id:
-            return HTTPException(status_code=status.HTTP_201_CREATED)
-    products = checkout["products"]
-    products.append(product_dbref)
-    total = checkout["total"]
-    total += product["price"]
-    updated_checkout = checkout_collection.update_one(
-        {"_id": checkout["_id"]}, {"$set": {"products": products, "total": total}}
+    session = request.session
+    cart = session.get("cart")
+    detail = []
+    total = 0
+    for product_id, quantity in cart.items():
+        product = product_collection.find_one({"_id": ObjectId(product_id)})
+        total += product["price"] * quantity
+        product_dbref = DBRef("products", ObjectId(product_id), "ecommerce")
+        detail.append({"product": product_dbref, "quantity": quantity})
+
+    checkout = checkout_collection.insert_one(
+        {"user": user_dbref, "detail": detail, "total": total}
     )
-    if updated_checkout.matched_count:
-        product_collection.update_one({"_id": product["_id"]}, {"$inc": {"item": -1}})
-        return HTTPException(
-            status_code=status.HTTP_200_OK, detail="Checkout update success"
-        )
-
-
-@router.put("/increase")
-def increase_item(data: Checkout, user=Depends(get_user)):
-    data_dict = data.model_dump()
-    user_dbref = DBRef("users", ObjectId(user["_id"]), "ecommerce")
-    product = product_collection.find_one({"_id": ObjectId(data_dict["product"])})
-    if not product["item"]:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Insufficient product"
-        )
-    product_dbref = DBRef("products", ObjectId(data_dict["product"]), "ecommerce")
-    checkout = checkout_collection.find_one({"user": user_dbref})
-    products = checkout["products"]
-    products.append(product_dbref)
-    total = checkout["total"]
-    total += product["price"]
-
-    updated_checkout = checkout_collection.update_one(
-        {"_id": checkout["_id"]}, {"$set": {"products": products, "total": total}}
-    )
-    if updated_checkout.matched_count:
-        product_collection.update_one(
-            {"_id": ObjectId(data_dict["product"])}, {"$inc": {"item": -1}}
-        )
-        return HTTPException(
-            status_code=status.HTTP_200_OK, detail="Checkout update success"
-        )
-
-
-@router.put("/decrease")
-def decrease_item(data: Checkout, user=Depends(get_user)):
-    data_dict = data.model_dump()
-    user_dbref = DBRef("users", ObjectId(user["_id"]), "ecommerce")
-    product = product_collection.find_one({"_id": ObjectId(data_dict["product"])})
-    product_dbref = DBRef("products", ObjectId(data_dict["product"]), "ecommerce")
-    checkout = checkout_collection.find_one({"user": user_dbref})
-    products = checkout["products"]
-    products.remove(product_dbref)
-    total = checkout["total"]
-    total -= product["price"]
-
-    if not total:
-        checkout_collection.delete_one({"_id": checkout["_id"]})
-    else:
-        checkout_collection.update_one(
-            {"_id": checkout["_id"]}, {"$set": {"products": products, "total": total}}
-        )
-    product_collection.update_one(
-        {"_id": ObjectId(data_dict["product"])}, {"$inc": {"item": 1}}
-    )
-    return HTTPException(
-        status_code=status.HTTP_200_OK, detail="Checkout update success"
-    )
+    if checkout.inserted_id:
+        session.pop("cart")
+        return {"detail": "Successfully added.", "success": True}
 
 
 @router.get("/")
-def get_checkout(user=Depends(get_user)):
-    user_dbref = DBRef("users", ObjectId(user["_id"]), "ecommerce")
-    checkout = checkout_collection.find_one({"user": user_dbref})
+def find_checkouts(request: Request, user=Depends(get_user)):
+    session = request.session
+    user_id = session.get("user_id")
+    user_dbref = DBRef("users", ObjectId(user_id), "ecommerce")
+    cursor = checkout_collection.find({"user": user_dbref})
+    checkouts = []
+    for checkout in cursor:
+        detail = []
+        checkout["_id"] = str(checkout["_id"])
+        checkout["user"] = user_dereference(checkout["user"])
+        for product_detail in checkout["detail"]:
+            product_detail["product"] = product_dereference(product_detail["product"])
+            detail.append(product_detail)
+        checkouts.append(checkout)
+    return checkouts
+
+
+@router.get("/{checkout_id}")
+def find_checkout(checkout_id: str, user=Depends(get_user)):
+    checkout = checkout_collection.find_one({"_id": ObjectId(checkout_id)})
+    if not checkout:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Checkout ID"
+        )
     checkout["_id"] = str(checkout["_id"])
     checkout["user"] = user_dereference(checkout["user"])
-    products = []
-    for product in checkout["products"]:
-        product = product_dereference(product)
-        products.append(product)
-    checkout["products"] = products
+    detail = []
+    for product_detail in checkout["detail"]:
+        product_detail["product"] = product_dereference(product_detail["product"])
+        detail.append(product_detail)
+    checkout["detail"] = detail
     return checkout

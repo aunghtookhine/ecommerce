@@ -37,7 +37,6 @@ def product_dereference(product_dbref):
     images = []
     for image in product["images"]:
         image = image_dereference(image)
-        image["_id"] = str(image["_id"])
         images.append(image)
     product["images"] = images
     return product
