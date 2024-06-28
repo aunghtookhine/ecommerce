@@ -15,14 +15,14 @@
     />
 
     <script>
-      const token = localStorage.getItem("token");
-      if (!token) {
-        window.location.href = "/login";
-      }
+      // const token = localStorage.getItem("token");
+      // if (!token) {
+      //   window.location.href = "/login";
+      // }
     </script>
   </head>
   <body>
-    {% include 'nav_bar.html'%} {% block content %} {% endblock %} 
+    {% include 'layout/nav_bar.html'%} {% block content %} {% endblock %} 
     <div style="bottom: 10px; right: 10px" class="position-absolute">
       <div
         class="toast text-bg-danger border-0"

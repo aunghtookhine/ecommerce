@@ -8,7 +8,9 @@ from .routers.product import find_products, find_product
 from .routers.cart import get_cart_items
 from starlette.middleware.sessions import SessionMiddleware
 from .routers.checkout import find_checkouts, find_checkout
-
+from .models.category import get_category_names
+from fastapi.responses import RedirectResponse
+from .routers import website_page
 
 templates = Jinja2Templates(directory="app/templates")
 app = FastAPI()
@@ -23,110 +25,17 @@ app.include_router(product.router, prefix="/api/products", tags=["product"])
 app.include_router(image.router, prefix="/api/images", tags=["image"])
 app.include_router(cart.router, prefix="/api/cart", tags=["Cart"])
 app.include_router(checkout.router, prefix="/api/checkouts", tags=["checkout"])
-
-
-@app.get("/products/{product_id}")
-def product_detail_page(request: Request, product_id: str):
-    product = find_product(product_id)
-    cart_items = get_cart_items(request)
-    total_qty = 0
-    for qty in cart_items.values():
-        total_qty += qty
-    return templates.TemplateResponse(
-        "/website/product_detail.html",
-        {"request": request, "product": product, "total_qty": total_qty},
-    )
-
-
-@app.get("/pdf/{checkout_id}")
-def pdf(request: Request, checkout_id: str):
-    checkout = find_checkout(checkout_id)
-    return templates.TemplateResponse(
-        "pdf.html", {"request": request, "checkout": checkout}
-    )
-
-
-@app.get("/")
-def root(request: Request):
-    products = find_products()
-    cart_items = get_cart_items(request)
-    total_qty = 0
-    for qty in cart_items.values():
-        total_qty += qty
-    return templates.TemplateResponse(
-        "index.html",
-        {"request": request, "products": products, "total_qty": total_qty},
-    )
-
-
-@app.get("/cart")
-def cart_page(request: Request):
-    cart_items = get_cart_items(request)
-    total = 0
-    products = []
-    for item, qty in cart_items.items():
-        product = find_product(item)
-        product["qty"] = qty
-        total += product["price"] * product["qty"]
-        products.append(product)
-    message = get_message(request)
-    return templates.TemplateResponse(
-        "cart.html",
-        {"request": request, "products": products, "total": total, "message": message},
-    )
-
-
-@app.get("/checkout")
-def checkout_page(request: Request):
-    checkouts = find_checkouts(request)
-    cart_items = get_cart_items(request)
-    total_qty = 0
-    for qty in cart_items.values():
-        total_qty += qty
-    return templates.TemplateResponse(
-        "checkout.html",
-        {"request": request, "checkouts": checkouts, "total_qty": total_qty},
-    )
-
-
-@app.get("/dashboard")
-def home_page(request: Request):
-    return templates.TemplateResponse("home.html", {"request": request})
-
-
-@app.get("/dashboard/categories")
-def category_page(request: Request):
-    categories = find_categories()
-    return templates.TemplateResponse(
-        "categories.html", {"request": request, "categories": categories}
-    )
-
-
-@app.get("/dashboard/products")
-def product_page(request: Request):
-    return templates.TemplateResponse("products.html", {"request": request})
-
-
-@app.get("/dashboard/users")
-def user_page(request: Request):
-    return templates.TemplateResponse("users.html", {"request": request})
+app.include_router(website_page.router, tags=["website_page"])
 
 
 @app.get("/login")
 def login(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse("layout/login.html", {"request": request})
 
 
 @app.get("/register")
 def login(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request})
-
-
-@app.get("/api/message")
-def get_message(request: Request):
-    session = request.session
-    message = session.get("message")
-    return {"message": message}
+    return templates.TemplateResponse("layout/register.html", {"request": request})
 
 
 # generate json file for api

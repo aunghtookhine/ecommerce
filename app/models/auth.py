@@ -18,14 +18,19 @@ class Login(BaseModel):
     def str_strip(cls, value):
         return value.strip()
 
+    @classmethod
+    def to_form_data(cls, email: str = Form(...), password: str = Form(...)):
+        return cls(email=email, password=password)
+
 
 class Register(BaseModel):
     username: str
     email: EmailStr
     password: str
+    is_admin: bool = False
     is_logged_in: bool = True
 
-    @field_validator("*")
+    @field_validator("username", "email", "password")
     def str_strip(cls, value):
         return value.strip()
 

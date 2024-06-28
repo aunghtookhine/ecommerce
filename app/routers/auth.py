@@ -16,7 +16,6 @@ from bson import ObjectId
 from fastapi.templating import Jinja2Templates
 
 router = APIRouter()
-
 templates = Jinja2Templates(directory="app/templates")
 
 
@@ -51,7 +50,7 @@ def register_user(request: Request, data: Register):
 
 
 @router.post("/login", status_code=status.HTTP_200_OK)
-def login_user(request: Request, data: Login):
+def login_user(request: Request, data: Login = Depends(Login.to_form_data)):
     data_dict = data.model_dump()
     registered_user = user_collection.find_one({"email": data_dict["email"]})
 
@@ -66,7 +65,13 @@ def login_user(request: Request, data: Login):
     token = generate_token(payload)
     if user.matched_count:
         request.session["user_id"] = str(registered_user["_id"])
-        return {"detail": "Successfully login", "token": token}
+        request.session["token"] = token
+        if registered_user["is_admin"]:
+            response = RedirectResponse(
+                url="/dashboard", status_code=status.HTTP_302_FOUND
+            )
+        response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
+        return response
 
 
 @router.patch("/change-password", status_code=status.HTTP_200_OK)

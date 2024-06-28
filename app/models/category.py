@@ -33,3 +33,17 @@ def category_dereference(category_dbref):
             )
         category["image"] = image_dereference(category["image"])
     return category
+
+
+def get_category_names(category):
+    names = []
+
+    def retrieve_name(category):
+        if category and category["name"]:
+            names.append(category["name"])
+        if category and category["parent_category"]:
+            retrieve_name(category["parent_category"])
+
+    retrieve_name(category)
+    reverse_names = names[::-1]
+    return " > ".join(reverse_names)

@@ -1,10 +1,10 @@
-{% extends 'auth_base.html' %}
+{% extends 'layout/auth_base.html' %}
 {% block content %}
 
 <div class="container d-flex justify-content-center align-items-center vh-100">
   <div class="w-50 mx-auto p-5 shadow-lg">
     <h1 class="page-header text-center mb-5">Cartopia</h1>
-    <form id="loginForm">
+    <form id="loginForm" action="/api/auth/login" method="post">
       <div class="mb-3">
         <label for="email" class="form-label fw-bold">Email address</label>
         <input type="email" class="form-control" id="email" name="email" required />
@@ -29,31 +29,32 @@
 </div>
 </div>
 <script>
-  document.getElementById("loginForm").addEventListener("submit", async function (e) {
-    email = document.getElementById("email");
-    password = document.getElementById("password");
-    emailError = document.getElementById('email-error')
-    passwordError = document.getElementById('password-error')
-    e.preventDefault();
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: "POST",
-        headers: { "Content-type": 'application/json' },
-        body: JSON.stringify({ email: email.value, password: password.value })
-      })
-      const { error, token } = await response.json()
-      if (error) {
-        email.classList.add('is-invalid')
-        password.classList.add('is-invalid')
-        emailError.innerHTML = `<p>${error}</p>`
-        passwordError.innerHTML = `<p>${error}</p>`
-      } else {
-        localStorage.setItem('token', token)
-        window.location.href = '/'
-      }
-    } catch (error) {
-      console.log("Error:", error)
-    }
-  });
+  // document.getElementById("loginForm").addEventListener("submit", async function (e) {
+  //   email = document.getElementById("email");
+  //   password = document.getElementById("password");
+  //   emailError = document.getElementById('email-error')
+  //   passwordError = document.getElementById('password-error')
+  //   e.preventDefault();
+  //   try {
+  //     const response = await fetch('/api/auth/login', {
+  //       method: "POST",
+  //       headers: { "Content-type": 'application/json' },
+  //       body: JSON.stringify({ email: email.value, password: password.value })
+  //     })
+  //     const { error, token } = await response.json()
+  //     console.log(token)
+  //     if (error) {
+  //       email.classList.add('is-invalid')
+  //       password.classList.add('is-invalid')
+  //       emailError.innerHTML = `<p>${error}</p>`
+  //       passwordError.innerHTML = `<p>${error}</p>`
+  //     } else {
+  //       localStorage.setItem('token', token)
+  //       window.location.href = '/'
+  //     }
+  //   } catch (error) {
+  //     console.log("Error:", error)
+  //   }
+  // });
 </script>
 {% endblock content %}
