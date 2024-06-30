@@ -10,7 +10,8 @@ router = APIRouter()
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create_product(data: Product, user=Depends(get_user)):
+def create_product(data: Product = Depends(Product.to_form_data), user=Depends(get_user)):
+    return data
     product_dict = data.model_dump()
     product_dict["category"] = DBRef(
         "categories", ObjectId(product_dict["category"]), "ecommerce"
@@ -59,7 +60,7 @@ def find_product(id: str, user=Depends(get_user)):
 
 
 @router.put("/{id}", status_code=status.HTTP_200_OK)
-def update_product(id: str, data: Product):
+def update_product(id: str, data: Product, user=Depends(get_user)):
     data_dict = data.model_dump()
     data_dict["category"] = DBRef(
         "categories", ObjectId(data_dict["category"]), "ecommerce"

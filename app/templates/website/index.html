@@ -1,15 +1,16 @@
 {% extends 'layout/main_base.html'%}
 {% block content %}
 <div class="container mt-5">
-    <div class="d-flex justify-content-around">
+    <div class="d-flex justify-content-around flex-wrap">
         {% for product in products %}
-        <div class="card" style="width: 18rem">
-            <img class="card-img-top" src="{{product.images[0].img_url}}" alt="Product Image" />
+        <div class="card mb-3" style="width: 15rem; height: auto">
+
+            <img class="card-img-top" src="{{product.images[0].img_url}}" alt="Product Image">
+
             <div class="card-body">
-                <h5 class="card-title">{{product.name}}</h5>
-                <p class="card-text">{{product.description}}</p>
+                <h5 class="card-title text-truncate">{{product.name}}</h5>
+                <p class="card-text text-truncate">{{product.description}}</p>
                 <a href="/products/{{product._id}}" class="btn btn-dark float-end">Detail</a>
-                <!-- <a href="#" class="btn btn-dark" onclick="handleAddToCart('{{product._id}}')">Add to Cart</a> -->
             </div>
         </div>
         {% endfor %}

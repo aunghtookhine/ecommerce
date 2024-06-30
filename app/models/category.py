@@ -7,7 +7,7 @@ from ..models.image import image_dereference
 class Category(BaseModel):
     name: str
     parent_category: str = None
-    image: str
+    image: str = None
 
     @field_validator("*")
     def str_strip(cls, value):

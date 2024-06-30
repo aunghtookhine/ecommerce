@@ -64,6 +64,7 @@ def login_user(request: Request, data: Login = Depends(Login.to_form_data)):
     payload = {"_id": str(registered_user["_id"])}
     token = generate_token(payload)
     if user.matched_count:
+        return token
         request.session["user_id"] = str(registered_user["_id"])
         request.session["token"] = token
         if registered_user["is_admin"]:

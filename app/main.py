@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Depends
-from .routers import auth, category, product, image, checkout, cart
+from .routers import auth, category, product, image, checkout, cart, website_page, dashboard_page
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from .models.auth import get_user
@@ -10,7 +10,6 @@ from starlette.middleware.sessions import SessionMiddleware
 from .routers.checkout import find_checkouts, find_checkout
 from .models.category import get_category_names
 from fastapi.responses import RedirectResponse
-from .routers import website_page
 
 templates = Jinja2Templates(directory="app/templates")
 app = FastAPI()
@@ -25,7 +24,8 @@ app.include_router(product.router, prefix="/api/products", tags=["product"])
 app.include_router(image.router, prefix="/api/images", tags=["image"])
 app.include_router(cart.router, prefix="/api/cart", tags=["Cart"])
 app.include_router(checkout.router, prefix="/api/checkouts", tags=["checkout"])
-app.include_router(website_page.router, tags=["website_page"])
+app.include_router(website_page.router, tags=["website"])
+app.include_router(dashboard_page.router, prefix="/dashboard", tags=['dashboard'])
 
 
 @app.get("/login")

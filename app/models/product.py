@@ -1,5 +1,5 @@
 from pydantic import BaseModel, field_validator
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Form
 from ..db.mongodb import db
 from ..models.category import category_dereference
 from ..models.image import image_dereference
@@ -28,6 +28,10 @@ class Product(BaseModel):
                 detail="Fields cannot be empty",
             )
         return value
+    
+    @classmethod
+    def to_form_data(cls, name: str = Form(...), category: str = Form(...), description: str = Form(...), item:int = Form(...), feature_product:bool = Form(default=False), price: int = Form(...), images: list[str] = Form(default=[])):
+        return cls(name=name, category=category, description=description, item=item, feature_product=feature_product, price=price, images=images)
 
 
 def product_dereference(product_dbref):
