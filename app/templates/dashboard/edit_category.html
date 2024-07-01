@@ -1,0 +1,52 @@
+{% extends 'layout/dashboard_base.html' %}
+{% block content %}
+<div class="p-3">
+    <div class="mb-3">
+        <h1>Update Category</h1>
+    </div>
+    <hr>
+    <div>
+        <form method="post" action="/api/categories/{{category._id}}">
+            <input type="hidden" value="{{token}}" name="token">
+            <div class="row mb-3">
+                <div class="col">
+                    <input type="text" class="form-control" placeholder="Name" name="name" value="{{category.name}}">
+                </div>
+                <div class="col">
+                    <select class="form-select" name="parent_category">
+                        <option selected>Parent Category</option>
+                        {% for cat in categories %}
+                            {% if cat._id == category.parent_category._id %}
+                                <option value="{{cat._id}}" selected>{{cat.name}}</option>
+                            {% else %}
+                                <option value="{{cat._id}}">{{cat.name}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    <select class="form-select" name="image">
+                        <option selected>Image</option>
+                        {% for img in images %}
+                            {% if img._id == category.image._id %}
+                                <option value="{{img._id}}" selected>{{img.name}}</option>
+                            {% else %}
+                                <option value="{{img._id}}">{{img.name}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <button type="submit" class="btn btn-dark">Update</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+{% endblock %}

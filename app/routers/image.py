@@ -1,4 +1,14 @@
-from fastapi import APIRouter, Depends, status, Form, UploadFile, HTTPException, File
+from fastapi import (
+    APIRouter,
+    Depends,
+    status,
+    Form,
+    UploadFile,
+    HTTPException,
+    File,
+    Request,
+)
+from fastapi.responses import RedirectResponse
 from ..db.mongodb import image_collection
 from ..models.auth import get_user
 from bson import ObjectId
@@ -14,11 +24,13 @@ load_dotenv(override=True)
 
 @router.post("/")
 async def upload(
+    request: Request,
     name: str = Form(...),
     file: UploadFile = File(...),
+    token: str = Form(...),
     is_category: bool = Form(default=True),
-    user=Depends(get_user),
 ):
+    user = get_user(request, token)
     available_content_types = ["image/png", "image/jpeg"]
     content_type = file.headers.get("content-type")
     if not content_type in available_content_types:
@@ -33,7 +45,7 @@ async def upload(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Duplicate image"
         )
-    date = datetime.datetime.now().strftime("%d-%b-%Y-%H:%M:%S")
+    date = datetime.datetime.now().strftime("%d-%b-%Y-%H_%M_%S")
     _, file_ext = os.path.splitext(file.filename)
     name = name.strip().lower().split()
     name = "-".join(name)
@@ -49,7 +61,8 @@ async def upload(
     img = image_collection.insert_one(
         {"name": name.strip().lower(), "checksum": checksum, "img_url": path}
     )
-    return {"_id": str(img.inserted_id)}
+    if img.inserted_id:
+        return RedirectResponse("/dashboard/images", status_code=status.HTTP_302_FOUND)
 
 
 @router.get("/")
@@ -73,12 +86,15 @@ def find_image(id: str, user=Depends(get_user)):
     return image
 
 
-@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def remove_image(id: str, user=Depends(get_user)):
+@router.post("/{id}", status_code=status.HTTP_200_OK)
+def remove_image(request: Request, id: str, token: str = Form(...)):
+    user = get_user(request, token)
     image = image_collection.find_one_and_delete({"_id": ObjectId(id.strip())})
     if not image:
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Invalid image id"
         )
-    img_path = os.path.join("static", image["img_url"])
-    os.remove(img_path)
+    path = image["img_url"]
+    path = path.replace("/static", "static")
+    os.remove(path)
+    return RedirectResponse("/dashboard/images", status_code=status.HTTP_302_FOUND)

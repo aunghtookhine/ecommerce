@@ -1,4 +1,5 @@
-from fastapi import APIRouter, status, HTTPException, Depends
+from fastapi import APIRouter, status, HTTPException, Depends, Form, Request
+from fastapi.responses import RedirectResponse
 from ..models.category import Category
 from ..db.mongodb import category_collection, db
 from bson import ObjectId, DBRef
@@ -10,15 +11,24 @@ router = APIRouter()
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create_category(data: Category, user=Depends(get_user)):
+def create_category(
+    request: Request,
+    data: Category = Depends(Category.to_form_data),
+    token: str = Form(...),
+):
+    user = get_user(request, token)
     data_dict = data.model_dump()
     if data_dict["parent_category"]:
         data_dict["parent_category"] = DBRef(
             "categories", ObjectId(data_dict["parent_category"]), "ecommerce"
         )
-    data_dict["image"] = DBRef("images", ObjectId(data_dict["image"]), "ecommerce")
+    if data_dict["image"]:
+        data_dict["image"] = DBRef("images", ObjectId(data_dict["image"]), "ecommerce")
     category = category_collection.insert_one(data_dict)
-    return {"_id": str(category.inserted_id)}
+    if category.inserted_id:
+        return RedirectResponse(
+            "/dashboard/categories", status_code=status.HTTP_302_FOUND
+        )
 
 
 @router.get("/", status_code=status.HTTP_200_OK)
@@ -61,14 +71,22 @@ def find_category(id: str, user=Depends(get_user)):
     return category
 
 
-@router.put("/{id}", status_code=status.HTTP_200_OK)
-def update_category(id: str, data: Category, user=Depends(get_user)):
+@router.post("/{id}", status_code=status.HTTP_200_OK)
+def update_category(
+    request: Request,
+    id: str,
+    token: str = Form(...),
+    data: Category = Depends(Category.to_form_data),
+):
+    user = Depends(get_user(request, token))
     data_dict = data.model_dump()
     if data_dict["parent_category"]:
         data_dict["parent_category"] = DBRef(
             "categories", ObjectId(data_dict["parent_category"]), "ecommerce"
         )
-    data_dict["image"] = DBRef("images", ObjectId(data_dict["image"]), "ecommerce")
+    if data_dict["image"]:
+        data_dict["image"] = DBRef("images", ObjectId(data_dict["image"]), "ecommerce")
+
     category = category_collection.update_one(
         {"_id": ObjectId(id.strip())},
         {"$set": data_dict},
@@ -77,7 +95,7 @@ def update_category(id: str, data: Category, user=Depends(get_user)):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Category Id"
         )
-    return {"detail": "Successfully Updated"}
+    # return RedirectResponse("/dashboard/categories", status_code=status.HTTP_302_FOUND)
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)

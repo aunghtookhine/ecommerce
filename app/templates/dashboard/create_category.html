@@ -1,0 +1,44 @@
+{% extends 'layout/dashboard_base.html' %}
+{% block content %}
+<div class="p-3">
+    <div class="mb-3">
+        <h1>Create Category</h1>
+    </div>
+    <hr>
+    <div>
+        <form method="post" action="/api/categories">
+            <input type="hidden" value="{{token}}" name="token">
+            <div class="row mb-3">
+                <div class="col">
+                    <input type="text" class="form-control" placeholder="Name" name="name">
+                </div>
+                <div class="col">
+                    <select class="form-select" name="parent_category">
+                        <option selected>Parent Category</option>
+                        {% for category in categories %}
+                        <option value="{{category._id}}">{{category.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    <select class="form-select" name="image">
+                        <option selected>Image</option>
+                        {% for image in images %}
+                        <option value="{{image._id}}">{{image.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <button type="submit" class="btn btn-dark">Create</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+{% endblock %}

@@ -11,9 +11,10 @@ from ..models.auth import (
 )
 from ..db.mongodb import user_collection
 from ..models.auth import generate_token, get_user
-from ..routers.cart import clear_session
 from bson import ObjectId
 from fastapi.templating import Jinja2Templates
+from ..db.mongodb import product_collection
+from pymongo import UpdateOne
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -57,21 +58,22 @@ def login_user(request: Request, data: Login = Depends(Login.to_form_data)):
     if not registered_user or not check_password(
         registered_user["password"], data_dict["password"]
     ):
-        return JSONResponse(content={"error": "Invalid Credentials"}, status_code=401)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Credentials"
+        )
     user = user_collection.update_one(
         {"email": data_dict["email"]}, {"$set": {"is_logged_in": True}}
     )
     payload = {"_id": str(registered_user["_id"])}
     token = generate_token(payload)
     if user.matched_count:
-        return token
         request.session["user_id"] = str(registered_user["_id"])
         request.session["token"] = token
+        response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
         if registered_user["is_admin"]:
             response = RedirectResponse(
                 url="/dashboard", status_code=status.HTTP_302_FOUND
             )
-        response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
         return response
 
 
@@ -101,11 +103,29 @@ def change_password(data: ChangePassword, user=Depends(get_user)):
         return {"detail": "Successfully Updated."}
 
 
-@router.get("/logout", status_code=status.HTTP_200_OK)
-def log_out(request: Request, user=Depends(get_user)):
+@router.post("/logout", status_code=status.HTTP_200_OK)
+def log_out(request: Request, token: str = Form(...)):
+    user = get_user(request, token)
     updated_user = user_collection.update_one(
         {"_id": ObjectId(user["_id"])}, {"$set": {"is_logged_in": False}}
     )
     if updated_user.matched_count:
         clear_session(request)
-        return {"detail": "Successfully logged out"}
+        return RedirectResponse("/login", status_code=status.HTTP_302_FOUND)
+
+
+@router.get("/clear")
+def clear_session(request: Request, user=Depends(get_user)):
+    session = request.session
+    cart_items = session.get("cart")
+    if cart_items:
+        operations = []
+        for product_id, qty in cart_items.items():
+            operations.append(
+                UpdateOne({"_id": ObjectId(product_id)}, {"$inc": {"item": qty}})
+            )
+        result = product_collection.bulk_write(operations)
+        if not result.bulk_api_result.get("writeErrors"):
+            session.pop("cart", None)
+    session.clear()
+    return {"detail": "Successfully Cleared"}

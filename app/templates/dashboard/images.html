@@ -11,7 +11,10 @@
     <div class="card mb-3 me-3" style="width: 14rem">
       <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="text-truncate">{{image.name}}</h5>
-        <a href="" class="btn btn-outline-danger btn-sm d-block"><i class="bi bi-trash"></i></a>
+        <form action="/api/images/{{image._id}}" method="post">
+          <input type="hidden" name="token" value="{{token}}">
+          <button class="btn btn-outline-danger btn-sm d-block"><i class="bi bi-trash"></i></button>
+        </form>
       </div>
       <img class="card-img-top" src="{{image.img_url}}" alt="Card image cap" />
     </div>

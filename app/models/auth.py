@@ -7,7 +7,7 @@ from fastapi import Request, Form
 from ..db.mongodb import user_collection
 from bson import ObjectId
 from ..db.mongodb import db
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 
 
 class Login(BaseModel):
@@ -59,11 +59,6 @@ class ChangePassword(BaseModel):
         if error:
             return error
         return value
-
-
-# def validate_email(email):
-#     regex = "[\w\.-]+@[\w\.-]+\.\w{2,4}"
-#     return re.match(regex, email)
 
 
 def validate_username(username):
@@ -126,8 +121,10 @@ def generate_token(payload):
     return jwt.encode(payload, "ecommerce", algorithm="HS256")
 
 
-def get_user(request: Request):
-    authorization = request.headers.get("Authorization")
+def get_user(request: Request, token: str):
+    authorization = f"Bearer {token}"
+    if request.headers.get("Authorization"):
+        authorization = request.headers.get("Authorization")
     if not authorization:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized1"
@@ -158,3 +155,12 @@ def user_dereference(user_dbref):
     user["_id"] = str(user["_id"])
     del user["password"]
     return user
+
+
+def check_logged_in(request: Request):
+    session = request.session
+    user_id = session.get("user_id")
+    user = user_collection.find_one({"_id": ObjectId(user_id)})
+    if not user:
+        return False
+    return True

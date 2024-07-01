@@ -6,10 +6,11 @@
     </div>
     <hr>
     <div>
-        <form method="post" action="/api/images">
+        <form method="post" action="/api/images" enctype="multipart/form-data">
+            <input type="hidden" name="token" value="{{token}}">
             <div class="row mb-3">
                 <div class="col">
-                    <input type="text" class="form-control" placeholder="Name">
+                    <input type="text" class="form-control" placeholder="Name" name="name">
                 </div>
                 <div class="col">
                     <input class="form-control" type="file" name="file">
