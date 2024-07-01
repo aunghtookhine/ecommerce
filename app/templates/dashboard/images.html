@@ -1,0 +1,22 @@
+{% extends 'layout/dashboard_base.html' %} {% block content %}
+
+<div class="p-3">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Images</h1>
+    <a class="btn btn-outline-dark" href="/dashboard/images/create">Create</a>
+  </div>
+  <hr>
+  <div class="d-flex flex-wrap">
+    {% for image in images %}
+    <div class="card mb-3 me-3" style="width: 14rem">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="text-truncate">{{image.name}}</h5>
+        <a href="" class="btn btn-outline-danger btn-sm d-block"><i class="bi bi-trash"></i></a>
+      </div>
+      <img class="card-img-top" src="{{image.img_url}}" alt="Card image cap" />
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock content %}
