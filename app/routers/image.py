@@ -16,7 +16,6 @@ import os
 import hashlib
 import datetime
 from dotenv import load_dotenv
-import os
 
 router = APIRouter()
 load_dotenv(override=True)
@@ -28,7 +27,7 @@ async def upload(
     name: str = Form(...),
     file: UploadFile = File(...),
     token: str = Form(...),
-    is_category: bool = Form(default=True),
+    is_category: bool = Form(default=False),
 ):
     user = get_user(request, token)
     available_content_types = ["image/png", "image/jpeg"]
@@ -87,7 +86,11 @@ def find_image(id: str, user=Depends(get_user)):
 
 
 @router.post("/{id}", status_code=status.HTTP_200_OK)
-def remove_image(request: Request, id: str, token: str = Form(...)):
+def remove_image(
+    request: Request, id: str, token: str = Form(...), method: str = Form(...)
+):
+    if method.upper() != "DELETE":
+        raise HTTPException(status_code=status.HTTP_405_METHOD_NOT_ALLOWED)
     user = get_user(request, token)
     image = image_collection.find_one_and_delete({"_id": ObjectId(id.strip())})
     if not image:

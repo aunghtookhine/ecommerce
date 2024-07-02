@@ -10,13 +10,13 @@
             <input type="hidden" value="{{token}}" name="token">
             <div class="row mb-3">
                 <div class="col">
-                    <input type="text" class="form-control" placeholder="Name" name="name">
+                    <input type="text" class="form-control" placeholder="Name" name="name" required>
                 </div>
                 <div class="col">
                     <select class="form-select" name="parent_category">
-                        <option selected>Parent Category</option>
+                        <option selected value="null">No Parent Category</option>
                         {% for category in categories %}
-                        <option value="{{category._id}}">{{category.name}}</option>
+                                <option value="{{category._id}}">{{category.name}}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -24,7 +24,7 @@
             <div class="row mb-3">
                 <div class="col">
                     <select class="form-select" name="image">
-                        <option selected>Image</option>
+                        <option selected value="null">No Image</option>
                         {% for image in images %}
                         <option value="{{image._id}}">{{image.name}}</option>
                         {% endfor %}

@@ -1,39 +1,158 @@
-{% extends 'layout/dashboard_base.html' %}
-{% block content %}
+{% extends 'layout/dashboard_base.html' %} {% block content %}
 
 <div class="p-3">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Products</h1>
-        <a class="btn btn-outline-dark" href="/dashboard/products/create">Create</a>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Products</h1>
+    <button
+      type="button"
+      class="btn btn-outline-dark"
+      data-bs-toggle="modal"
+      data-bs-target="#exampleModal"
+    >
+      Create
+    </button>
+    <!-- <a class="btn btn-outline-dark" href="/dashboard/products/create">Create</a> -->
+  </div>
+  <hr />
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Category</th>
+        <th scope="col">Item</th>
+        <th scope="col">Feature Product</th>
+        <th scope="col">Price</th>
+        <th scope="col">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for product in products %}
+      <tr>
+        <td>{{ product.name }}</td>
+        <td>{{ product.category.name}}</td>
+        <td>{{ product.item}}</td>
+        <td>{{ product.feature_product}}</td>
+        <td>{{ product.price}}</td>
+        <td>
+          <a
+            href="/dashboard/products/{{product._id}}"
+            class="btn btn-sm btn-warning"
+            >Edit</a
+          >
+          <a href="" class="btn btn-sm btn-danger">Delete</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Modal -->
+  <div
+    class="modal fade"
+    id="exampleModal"
+    tabindex="-1"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <form method="post" action="/api/products">
+        <input type="hidden" value="{{token}}" name="token">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">
+              Create New Product
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="row mb-3">
+              <div class="col">
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="name" name="name" required placeholder="Product Name">
+                    <label for="name">Name</label>
+                </div>
+              </div>
+              <div class="col">
+                <div class="form-floating">
+                    <select class="form-select" id="category" aria-label="Floating label select example" name="category">
+                        {% for category in categories %}
+                            <option value="{{category._id}}">{{category.name}}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="category">Category</label>
+                  </div>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col">
+                <div class="form-floating">
+                    <textarea class="form-control" placeholder="Write a description" id="description" style="height: 100px" name="description"></textarea>
+                    <label for="description">Description</label>
+                  </div>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col">
+                <div class="form-floating">
+                    <input type="number" class="form-control" id="item" name="item" placeholder="Stock" required>
+                    <label for="name">Item</label>
+                </div>
+              </div>
+              <div class="col">
+                <div class="form-floating">
+                    <input type="number" class="form-control" id="price" name="price" placeholder="Price" required>
+                    <label for="price">Price</label>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col">
+                <div class="form-floating">
+                    <select class="form-select" multiple id="images" aria-label="Floating label select example" name="images" style="height: 150px;">
+                        {% for image in images %}
+                            <option value="{{image._id}}">{{image.name}}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="images">Images</label>
+                  </div>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col">
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    name="feature_product"
+                    id="flexCheckChecked"
+                    checked
+                  />
+                  <label class="form-check-label" for="flexCheckChecked">
+                    Feature Product
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+            <button type="submit" class="btn btn-dark">Create</button>
+          </div>
+        </div>
+      </form>
     </div>
-    <hr>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Category</th>
-                <th scope="col">Item</th>
-                <th scope="col">Feature Product</th>
-                <th scope="col">Price</th>
-                <th scope="col">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for product in products %}
-            <tr>
-                <td>{{ product.name }}</td>
-                <td>{{ product.category.name}}</td>
-                <td>{{ product.item}}</td>
-                <td>{{ product.feature_product}}</td>
-                <td>{{ product.price}}</td>
-                <td>
-                    <a href="/dashboard/products/{{product._id}}" class="btn btn-sm btn-warning">Edit</a>
-                    <a href="" class="btn btn-sm btn-danger">Delete</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+  </div>
 </div>
 
 {% endblock content %}

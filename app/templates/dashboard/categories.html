@@ -26,12 +26,26 @@
                   {% endif %}
                 <td>
                     <a href="/dashboard/categories/{{category._id}}" class="btn btn-sm btn-warning">Edit</a>
-                    <a href="" class="btn btn-sm btn-danger">Delete</a>
+                    <a onclick="handleDeleteCategory('{{category._id}}', '{{token}}')" class="btn btn-danger btn-sm">Delete</a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+<script>
+    const handleDeleteCategory = async (id, token) => {
+        const {detail, success} = await deleteMethod(`/api/categories/${id}`, token)
+        const toast = document.getElementById('toast')
+        const toastBody = document.getElementById('toast-body')
+        toastBody.innerHTML = detail
+        if(success){
+            toast.classList.add('text-bg-success', 'show')
+            window.location.reload()
+        }else{
+            toast.classList.add('text-bg-danger', 'show')
+        }
+    }
+</script>
 
 {% endblock content %}

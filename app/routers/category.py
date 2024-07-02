@@ -18,12 +18,16 @@ def create_category(
 ):
     user = get_user(request, token)
     data_dict = data.model_dump()
-    if data_dict["parent_category"]:
+    if not data_dict["parent_category"] == "null":
         data_dict["parent_category"] = DBRef(
             "categories", ObjectId(data_dict["parent_category"]), "ecommerce"
         )
-    if data_dict["image"]:
+    else:
+        data_dict["parent_category"] = None
+    if not data_dict["image"] == "null":
         data_dict["image"] = DBRef("images", ObjectId(data_dict["image"]), "ecommerce")
+    else:
+        data_dict["image"] = None
     category = category_collection.insert_one(data_dict)
     if category.inserted_id:
         return RedirectResponse(
@@ -71,37 +75,47 @@ def find_category(id: str, user=Depends(get_user)):
     return category
 
 
-@router.post("/{id}", status_code=status.HTTP_200_OK)
+@router.put("/{id}", status_code=status.HTTP_200_OK)
 def update_category(
     request: Request,
     id: str,
-    token: str = Form(...),
-    data: Category = Depends(Category.to_form_data),
+    data: Category,
+    user=Depends(get_user),
 ):
-    user = Depends(get_user(request, token))
-    data_dict = data.model_dump()
-    if data_dict["parent_category"]:
-        data_dict["parent_category"] = DBRef(
-            "categories", ObjectId(data_dict["parent_category"]), "ecommerce"
+    try:
+        data_dict = data.model_dump()
+        if not data_dict["parent_category"] == "null":
+            data_dict["parent_category"] = DBRef(
+                "categories", ObjectId(data_dict["parent_category"]), "ecommerce"
+            )
+        else:
+            data_dict["parent_category"] = None
+        if not data_dict["image"] == "null":
+            data_dict["image"] = DBRef(
+                "images", ObjectId(data_dict["image"]), "ecommerce"
+            )
+        else:
+            data_dict["image"] = None
+        category = category_collection.update_one(
+            {"_id": ObjectId(id.strip())},
+            {"$set": data_dict},
         )
-    if data_dict["image"]:
-        data_dict["image"] = DBRef("images", ObjectId(data_dict["image"]), "ecommerce")
-
-    category = category_collection.update_one(
-        {"_id": ObjectId(id.strip())},
-        {"$set": data_dict},
-    )
-    if not category.matched_count:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Category Id"
-        )
-    # return RedirectResponse("/dashboard/categories", status_code=status.HTTP_302_FOUND)
+        if not category.matched_count:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Category Id"
+            )
+        return {"detail": "Successfully Updated.", "success": True}
+    except HTTPException as e:
+        return {"detail": e.detail, "success": False}
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_category(id: str, user=Depends(get_user)):
-    category = category_collection.delete_one({"_id": ObjectId(id.strip())})
-    if not category.deleted_count:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Category Id"
-        )
+def delete_category(request: Request, id: str, user=Depends(get_user)):
+    try:
+        category = category_collection.delete_one({"_id": ObjectId(id.strip())})
+        if not category.deleted_count:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Category Id"
+            )
+    except HTTPException as e:
+        return {"detail": e.detail, "success": False}

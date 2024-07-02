@@ -10,6 +10,19 @@ templates = Jinja2Templates(directory="app/templates")
 router = APIRouter()
 
 
+@router.get("/")
+def root(request: Request):
+    products = find_products()
+    cart_items = get_cart_items(request)
+    total_qty = 0
+    for qty in cart_items.values():
+        total_qty += qty
+    return templates.TemplateResponse(
+        "website/index.html",
+        {"request": request, "products": products, "total_qty": total_qty},
+    )
+
+
 @router.get("/products/{product_id}")
 def product_detail_page(request: Request, product_id: str):
     product = find_product(product_id)
@@ -36,19 +49,6 @@ def pdf(request: Request, checkout_id: str):
     checkout = find_checkout(checkout_id)
     return templates.TemplateResponse(
         "website/pdf.html", {"request": request, "checkout": checkout}
-    )
-
-
-@router.get("/")
-def root(request: Request):
-    products = find_products()
-    cart_items = get_cart_items(request)
-    total_qty = 0
-    for qty in cart_items.values():
-        total_qty += qty
-    return templates.TemplateResponse(
-        "website/index.html",
-        {"request": request, "products": products, "total_qty": total_qty},
     )
 
 

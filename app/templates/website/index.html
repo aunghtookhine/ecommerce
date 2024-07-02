@@ -4,9 +4,7 @@
     <div class="d-flex justify-content-around flex-wrap">
         {% for product in products %}
         <div class="card mb-3" style="width: 15rem; height: auto">
-
             <img class="card-img-top" src="{{product.images[0].img_url}}" alt="Product Image">
-
             <div class="card-body">
                 <h5 class="card-title text-truncate">{{product.name}}</h5>
                 <p class="card-text text-truncate">{{product.description}}</p>
@@ -16,6 +14,5 @@
         {% endfor %}
     </div>
 </div>
-</body>
 
 {% endblock %}

@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Form, Request
+from fastapi.responses import RedirectResponse
 from ..models.product import Product
 from ..db.mongodb import product_collection
 from bson import ObjectId, DBRef
@@ -10,18 +11,29 @@ router = APIRouter()
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create_product(data: Product = Depends(Product.to_form_data), user=Depends(get_user)):
-    return data
+def create_product(
+    request: Request,
+    data: Product = Depends(Product.to_form_data),
+    token: str = Form(...),
+):
+    user = get_user(request, token)
     product_dict = data.model_dump()
-    product_dict["category"] = DBRef(
-        "categories", ObjectId(product_dict["category"]), "ecommerce"
-    )
+    if product_dict["category"] != "null":
+        product_dict["category"] = DBRef(
+            "categories", ObjectId(product_dict["category"]), "ecommerce"
+        )
+    else:
+        product_dict["category"] = None
     images = []
-    for image in product_dict["images"]:
-        images.append(DBRef("images", ObjectId(image), "ecommerce"))
+    if product_dict["images"]:
+        for image in product_dict["images"]:
+            images.append(DBRef("images", ObjectId(image), "ecommerce"))
     product_dict["images"] = images
     product = product_collection.insert_one(product_dict)
-    return {"_id": str(product.inserted_id)}
+    if product.inserted_id:
+        return RedirectResponse(
+            "/dashboard/products", status_code=status.HTTP_302_FOUND
+        )
 
 
 @router.get("/", status_code=status.HTTP_200_OK)

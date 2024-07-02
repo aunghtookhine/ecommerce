@@ -121,10 +121,11 @@ def generate_token(payload):
     return jwt.encode(payload, "ecommerce", algorithm="HS256")
 
 
-def get_user(request: Request, token: str):
+def get_user(request: Request, token: str = None):
     authorization = f"Bearer {token}"
     if request.headers.get("Authorization"):
         authorization = request.headers.get("Authorization")
+        print(authorization)
     if not authorization:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized1"

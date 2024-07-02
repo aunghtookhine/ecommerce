@@ -29,8 +29,10 @@ def category_page(request: Request, is_logged_in: bool = Depends(check_logged_in
     if not is_logged_in:
         return RedirectResponse("/login")
     categories = find_categories()
+    token = request.session.get("token")
     return templates.TemplateResponse(
-        "dashboard/categories.html", {"request": request, "categories": categories}
+        "dashboard/categories.html",
+        {"request": request, "categories": categories, "token": token},
     )
 
 
@@ -81,8 +83,18 @@ def product_page(request: Request, is_logged_in: bool = Depends(check_logged_in)
     if not is_logged_in:
         return RedirectResponse("/login")
     products = find_products()
+    categories = find_categories()
+    images = find_images()
+    token = request.session.get("token")
     return templates.TemplateResponse(
-        "dashboard/products.html", {"request": request, "products": products}
+        "dashboard/products.html",
+        {
+            "request": request,
+            "products": products,
+            "categories": categories,
+            "images": images,
+            "token": token,
+        },
     )
 
 
@@ -93,8 +105,10 @@ def create_product_page(
     if not is_logged_in:
         return RedirectResponse("/login")
     categories = find_categories()
+    images = find_images()
     return templates.TemplateResponse(
-        "dashboard/create_product.html", {"request": request, "categories": categories}
+        "dashboard/create_product.html",
+        {"request": request, "categories": categories, "images": images},
     )
 
 
