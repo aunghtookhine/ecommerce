@@ -54,15 +54,7 @@
         const formData = new FormData(form);
         const formDataObj = Object.fromEntries(formData)
         const {detail, success} = await putMethod(`/api/categories/${id}`, formDataObj, token)
-        const toast = document.getElementById('toast')
-        const toastBody = document.getElementById('toast-body')
-        toastBody.innerHTML = detail
-        if(success){
-            toast.classList.add('text-bg-success', 'show')
-            window.location.href = '/dashboard/categories'
-        }else{
-            toast.classList.add('text-bg-danger', 'show')
-        }
+        showToast(detail, success, '/dashboard/categories')
     }   
 </script>
 

@@ -7,7 +7,7 @@
       type="button"
       class="btn btn-outline-dark"
       data-bs-toggle="modal"
-      data-bs-target="#exampleModal"
+      data-bs-target="#createProductModal"
     >
       Create
     </button>
@@ -39,7 +39,12 @@
             class="btn btn-sm btn-warning"
             >Edit</a
           >
-          <a href="" class="btn btn-sm btn-danger">Delete</a>
+          <button
+            onclick="handleDeleteProduct('{{product._id}}', '{{token}}')"
+            class="btn btn-sm btn-danger"
+          >
+            Delete
+          </button>
         </td>
       </tr>
       {% endfor %}
@@ -49,17 +54,16 @@
   <!-- Modal -->
   <div
     class="modal fade"
-    id="exampleModal"
+    id="createProductModal"
     tabindex="-1"
-    aria-labelledby="exampleModalLabel"
+    aria-labelledby="createProductModalLabel"
     aria-hidden="true"
   >
     <div class="modal-dialog">
-      <form method="post" action="/api/products">
-        <input type="hidden" value="{{token}}" name="token">
+      <form id="createProductForm">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">
+            <h5 class="modal-title" id="createProductModalLabel">
               Create New Product
             </h5>
             <button
@@ -73,53 +77,95 @@
             <div class="row mb-3">
               <div class="col">
                 <div class="form-floating">
-                    <input type="text" class="form-control" id="name" name="name" required placeholder="Product Name">
-                    <label for="name">Name</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="name"
+                    name="name"
+                    required
+                    placeholder="Product Name"
+                  />
+                  <label for="name">Name</label>
                 </div>
               </div>
               <div class="col">
                 <div class="form-floating">
-                    <select class="form-select" id="category" aria-label="Floating label select example" name="category">
-                        {% for category in categories %}
-                            <option value="{{category._id}}">{{category.name}}</option>
-                        {% endfor %}
-                    </select>
-                    <label for="category">Category</label>
-                  </div>
-              </div>
-            </div>
-            <div class="row mb-3">
-              <div class="col">
-                <div class="form-floating">
-                    <textarea class="form-control" placeholder="Write a description" id="description" style="height: 100px" name="description"></textarea>
-                    <label for="description">Description</label>
-                  </div>
-              </div>
-            </div>
-            <div class="row mb-3">
-              <div class="col">
-                <div class="form-floating">
-                    <input type="number" class="form-control" id="item" name="item" placeholder="Stock" required>
-                    <label for="name">Item</label>
-                </div>
-              </div>
-              <div class="col">
-                <div class="form-floating">
-                    <input type="number" class="form-control" id="price" name="price" placeholder="Price" required>
-                    <label for="price">Price</label>
+                  <select
+                    class="form-select"
+                    id="category"
+                    aria-label="Floating label select example"
+                    name="category"
+                  >
+                    {% for category in categories %}
+                    <option value="{{category._id}}">{{category.name}}</option>
+                    {% endfor %}
+                  </select>
+                  <label for="category">Category</label>
                 </div>
               </div>
             </div>
             <div class="row mb-3">
               <div class="col">
                 <div class="form-floating">
-                    <select class="form-select" multiple id="images" aria-label="Floating label select example" name="images" style="height: 150px;">
-                        {% for image in images %}
-                            <option value="{{image._id}}">{{image.name}}</option>
-                        {% endfor %}
-                    </select>
-                    <label for="images">Images</label>
-                  </div>
+                  <textarea
+                    class="form-control"
+                    placeholder="Write a description"
+                    id="description"
+                    style="height: 100px"
+                    name="description"
+                    required
+                  ></textarea>
+                  <label for="description">Description</label>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col">
+                <div class="form-floating">
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="item"
+                    name="item"
+                    placeholder="Stock"
+                    required
+                    value="0"
+                  />
+                  <label for="name">Item</label>
+                </div>
+              </div>
+              <div class="col">
+                <div class="form-floating">
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="price"
+                    name="price"
+                    placeholder="Price"
+                    value="0"
+                    required
+                  />
+                  <label for="price">Price</label>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col">
+                <div class="form-floating">
+                  <select
+                    class="form-select"
+                    multiple
+                    id="images"
+                    aria-label="Floating label select example"
+                    name="images"
+                    style="height: 150px"
+                  >
+                    {% for image in images %}
+                    <option value="{{image._id}}">{{image.name}}</option>
+                    {% endfor %}
+                  </select>
+                  <label for="images">Images</label>
+                </div>
               </div>
             </div>
             <div class="row mb-3">
@@ -147,12 +193,50 @@
             >
               Close
             </button>
-            <button type="submit" class="btn btn-dark">Create</button>
+            <a onclick="handleCreateProduct('{{token}}')" class="btn btn-dark"
+              >Create</a
+            >
           </div>
         </div>
       </form>
     </div>
   </div>
 </div>
-
+<script>
+  const handleDeleteProduct = (id, token) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Confirm",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        (async () => {
+          const { detail, success } = await deleteMethod(
+            `/api/products/${id}`,
+            token
+          );
+          showToast(detail, success);
+        })();
+      }
+    });
+  };
+  const handleCreateProduct = async (token) => {
+    const form = document.getElementById("createProductForm");
+    const formData = new FormData(form);
+    const formDataObj = Object.fromEntries(formData);
+    const selectedOptions = document.querySelectorAll("#images :checked");
+    const selectedImages = [...selectedOptions].map((option) => option.value);
+    formDataObj.images = selectedImages;
+    const { detail, success } = await postMethod(
+      `/api/products`,
+      formDataObj,
+      token
+    );
+    showToast(detail, success);
+  };
+</script>
 {% endblock content %}

@@ -20,6 +20,17 @@ router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
 
+@router.get("/users", status_code=status.HTTP_200_OK)
+def find_users():
+    cursor = user_collection.find({})
+    users = []
+    for user in cursor:
+        user["_id"] = ObjectId(user["_id"])
+        del user["password"]
+        users.append(user)
+    return users
+
+
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def register_user(request: Request, data: Register):
     user_dict = data.model_dump()
@@ -51,30 +62,31 @@ def register_user(request: Request, data: Register):
 
 
 @router.post("/login", status_code=status.HTTP_200_OK)
-def login_user(request: Request, data: Login = Depends(Login.to_form_data)):
-    data_dict = data.model_dump()
-    registered_user = user_collection.find_one({"email": data_dict["email"]})
+def login_user(request: Request, data: Login):
+    try:
+        data_dict = data.model_dump()
+        registered_user = user_collection.find_one({"email": data_dict["email"]})
 
-    if not registered_user or not check_password(
-        registered_user["password"], data_dict["password"]
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Credentials"
-        )
-    user = user_collection.update_one(
-        {"email": data_dict["email"]}, {"$set": {"is_logged_in": True}}
-    )
-    payload = {"_id": str(registered_user["_id"])}
-    token = generate_token(payload)
-    if user.matched_count:
-        request.session["user_id"] = str(registered_user["_id"])
-        request.session["token"] = token
-        response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
-        if registered_user["is_admin"]:
-            response = RedirectResponse(
-                url="/dashboard", status_code=status.HTTP_302_FOUND
+        if not registered_user or not check_password(
+            registered_user["password"], data_dict["password"]
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Credentials."
             )
-        return response
+        user = user_collection.update_one(
+            {"email": data_dict["email"]}, {"$set": {"is_logged_in": True}}
+        )
+        payload = {"_id": str(registered_user["_id"])}
+        token = generate_token(payload)
+        if user.matched_count:
+            request.session["user_id"] = str(registered_user["_id"])
+            request.session["token"] = token
+            url = "/"
+            if registered_user["is_admin"]:
+                url = "/dashboard"
+            return {"detail": "Successfully Logged In.", "success": True, "url": url}
+    except HTTPException as e:
+        return {"detail": e.detail, "success": False}
 
 
 @router.patch("/change-password", status_code=status.HTTP_200_OK)
@@ -104,14 +116,16 @@ def change_password(data: ChangePassword, user=Depends(get_user)):
 
 
 @router.post("/logout", status_code=status.HTTP_200_OK)
-def log_out(request: Request, token: str = Form(...)):
-    user = get_user(request, token)
-    updated_user = user_collection.update_one(
-        {"_id": ObjectId(user["_id"])}, {"$set": {"is_logged_in": False}}
-    )
-    if updated_user.matched_count:
-        clear_session(request)
-        return RedirectResponse("/login", status_code=status.HTTP_302_FOUND)
+def log_out(request: Request, user=Depends(get_user)):
+    try:
+        updated_user = user_collection.update_one(
+            {"_id": ObjectId(user["_id"])}, {"$set": {"is_logged_in": False}}
+        )
+        if updated_user.matched_count:
+            clear_session(request)
+            return {"detail": "Successfully Logged Out.", "success": True}
+    except HTTPException as e:
+        return {"detail": e.detail, "success": False}
 
 
 @router.get("/clear")

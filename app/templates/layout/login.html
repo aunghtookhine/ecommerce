@@ -4,7 +4,7 @@
 <div class="container d-flex justify-content-center align-items-center vh-100">
   <div class="w-50 mx-auto p-5 shadow-lg">
     <h1 class="page-header text-center mb-5">Cartopia</h1>
-    <form id="loginForm" action="/api/auth/login" method="post">
+    <form id="loginForm">
       <div class="mb-3">
         <label for="email" class="form-label fw-bold">Email address</label>
         <input type="email" class="form-control" id="email" name="email" required />
@@ -16,9 +16,9 @@
         <div id="password-error" class="invalid-feedback"></div>
       </div>
       <div class="mb-3 d-flex justify-content-end align-items-center">
-        <button type="submit" class="btn btn-dark w-25 fw-bold">
+        <a class="btn btn-dark w-25 fw-bold" onclick="handleLogin()">
           Login
-        </button>
+        </a>
       </div>
     </form>
     <p class="text-center fw-bold">Don't you have an account</p>
@@ -29,32 +29,19 @@
 </div>
 </div>
 <script>
-  // document.getElementById("loginForm").addEventListener("submit", async function (e) {
-  //   email = document.getElementById("email");
-  //   password = document.getElementById("password");
-  //   emailError = document.getElementById('email-error')
-  //   passwordError = document.getElementById('password-error')
-  //   e.preventDefault();
-  //   try {
-  //     const response = await fetch('/api/auth/login', {
-  //       method: "POST",
-  //       headers: { "Content-type": 'application/json' },
-  //       body: JSON.stringify({ email: email.value, password: password.value })
-  //     })
-  //     const { error, token } = await response.json()
-  //     console.log(token)
-  //     if (error) {
-  //       email.classList.add('is-invalid')
-  //       password.classList.add('is-invalid')
-  //       emailError.innerHTML = `<p>${error}</p>`
-  //       passwordError.innerHTML = `<p>${error}</p>`
-  //     } else {
-  //       localStorage.setItem('token', token)
-  //       window.location.href = '/'
-  //     }
-  //   } catch (error) {
-  //     console.log("Error:", error)
-  //   }
-  // });
+  const handleLogin = async () => {
+    const form = document.getElementById('loginForm')
+    const formData = new FormData(form)
+    const formDataObj = Object.fromEntries(formData)
+    const response = await fetch('/api/auth/login', {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(formDataObj),
+    });
+    const {detail, success, url} = await response.json();
+    showToast(detail, success, url)
+  }
 </script>
 {% endblock content %}

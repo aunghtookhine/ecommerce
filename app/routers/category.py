@@ -11,28 +11,26 @@ router = APIRouter()
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create_category(
-    request: Request,
-    data: Category = Depends(Category.to_form_data),
-    token: str = Form(...),
-):
-    user = get_user(request, token)
-    data_dict = data.model_dump()
-    if not data_dict["parent_category"] == "null":
-        data_dict["parent_category"] = DBRef(
-            "categories", ObjectId(data_dict["parent_category"]), "ecommerce"
-        )
-    else:
-        data_dict["parent_category"] = None
-    if not data_dict["image"] == "null":
-        data_dict["image"] = DBRef("images", ObjectId(data_dict["image"]), "ecommerce")
-    else:
-        data_dict["image"] = None
-    category = category_collection.insert_one(data_dict)
-    if category.inserted_id:
-        return RedirectResponse(
-            "/dashboard/categories", status_code=status.HTTP_302_FOUND
-        )
+def create_category(request: Request, data: Category, user=Depends(get_user)):
+    try:
+        data_dict = data.model_dump()
+        if not data_dict["parent_category"] == "null":
+            data_dict["parent_category"] = DBRef(
+                "categories", ObjectId(data_dict["parent_category"]), "ecommerce"
+            )
+        else:
+            data_dict["parent_category"] = None
+        if not data_dict["image"] == "null":
+            data_dict["image"] = DBRef(
+                "images", ObjectId(data_dict["image"]), "ecommerce"
+            )
+        else:
+            data_dict["image"] = None
+        category = category_collection.insert_one(data_dict)
+        if category.inserted_id:
+            return {"detail": "Successfully Created.", "success": True}
+    except HTTPException as e:
+        return {"detail": e.detail, "success": False}
 
 
 @router.get("/", status_code=status.HTTP_200_OK)
@@ -66,7 +64,7 @@ def find_category(id: str, user=Depends(get_user)):
     category = category_collection.find_one({"_id": ObjectId(id.strip())})
     if not category:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Category Id"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Category Id."
         )
     category["_id"] = str(category["_id"])
     if category["parent_category"]:
@@ -77,7 +75,6 @@ def find_category(id: str, user=Depends(get_user)):
 
 @router.put("/{id}", status_code=status.HTTP_200_OK)
 def update_category(
-    request: Request,
     id: str,
     data: Category,
     user=Depends(get_user),
@@ -102,7 +99,7 @@ def update_category(
         )
         if not category.matched_count:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Category Id"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Category Id."
             )
         return {"detail": "Successfully Updated.", "success": True}
     except HTTPException as e:
@@ -115,7 +112,7 @@ def delete_category(request: Request, id: str, user=Depends(get_user)):
         category = category_collection.delete_one({"_id": ObjectId(id.strip())})
         if not category.deleted_count:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Category Id"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Category Id."
             )
     except HTTPException as e:
         return {"detail": e.detail, "success": False}

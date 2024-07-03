@@ -5,7 +5,7 @@
   <hr />
   <ul class="nav nav-pills flex-column mb-auto">
     <li class="nav-item">
-      <a href="/dashboard/" class="nav-link text-white">Dashboard</a>
+      <a href="/dashboard" class="nav-link text-white">Dashboard</a>
     </li>
     <li class="nav-item">
       <a href="/dashboard/categories" class="nav-link text-white">Categories</a>
@@ -16,12 +16,14 @@
     <li class="nav-item">
       <a href="/dashboard/images" class="nav-link text-white">Images</a>
     </li>
+    <li class="nav-item">
+      <a href="/dashboard/users" class="nav-link text-white">Users</a>
+    </li>
   </ul>
   <hr />
   <div>
-    <form action="/api/auth/logout" method="post">
-      <input type="hidden" name="token" value="{{token}}">
-      <button class="btn btn-danger w-100 fw-bold" type="submit">Log out</button>
+    <form>
+      <a class="btn btn-danger w-100 fw-bold" onclick="handleLogout('{{token}}')">Log out</a>
     </form>
   </div>
 </div>
@@ -41,4 +43,14 @@
       }
     })
   })
+  const handleLogout = async (token) => {
+    const response = await fetch('/api/auth/logout', {
+      method: "POST",
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    const {detail, success} = await response.json();
+    showToast(detail, success, '/login')
+  }
 </script>

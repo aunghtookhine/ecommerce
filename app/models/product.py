@@ -9,10 +9,10 @@ class Product(BaseModel):
     name: str
     category: str
     description: str
-    item: int
+    item: int = 0
     feature_product: bool = False
-    price: int
-    images: list[str]
+    price: int = 0
+    images: list[str] = []
 
     @field_validator("*")
     def str_strip(cls, value):
@@ -28,27 +28,6 @@ class Product(BaseModel):
                 detail="Fields cannot be empty",
             )
         return value
-
-    @classmethod
-    def to_form_data(
-        cls,
-        name: str = Form(...),
-        category: str = Form(...),
-        description: str = Form(...),
-        item: int = Form(...),
-        feature_product: bool = Form(default=False),
-        price: int = Form(...),
-        images: list[str] = Form(default=[]),
-    ):
-        return cls(
-            name=name,
-            category=category,
-            description=description,
-            item=item,
-            feature_product=feature_product,
-            price=price,
-            images=images,
-        )
 
 
 def product_dereference(product_dbref):

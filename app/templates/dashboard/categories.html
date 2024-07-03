@@ -1,51 +1,173 @@
-{% extends 'layout/dashboard_base.html' %}
-{% block content %}
+{% extends 'layout/dashboard_base.html' %} {% block content %}
 
 <div class="p-3">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Categories</h1>
-        <a class="btn btn-outline-dark" href="/dashboard/categories/create">Create</a>
-    </div>
-    <hr>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Parent Category</th>
-                <th scope="col">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for category in categories %}
-            <tr>
-                <td>{{ category.name }}</td>
-                  {% if category.parent_category.name %}
-                    <td>{{category.parent_category.name}}</td>
-                  {% else %}
-                    <td>No Parent Category</td>
-                  {% endif %}
-                <td>
-                    <a href="/dashboard/categories/{{category._id}}" class="btn btn-sm btn-warning">Edit</a>
-                    <a onclick="handleDeleteCategory('{{category._id}}', '{{token}}')" class="btn btn-danger btn-sm">Delete</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Categories</h1>
+    <button
+      type="button"
+      class="btn btn-outline-dark"
+      data-bs-toggle="modal"
+      data-bs-target="#createCategoryModal"
+    >
+      Create
+    </button>
+  </div>
+  <hr />
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Parent Category</th>
+        <th scope="col">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for category in categories %}
+      <tr>
+        <td>{{ category.name }}</td>
+        {% if category.parent_category.name %}
+        <td>{{category.parent_category.name}}</td>
+        {% else %}
+        <td>No Parent Category</td>
+        {% endif %}
+        <td>
+          <a
+            href="/dashboard/categories/{{category._id}}"
+            class="btn btn-sm btn-warning"
+            >Edit</a
+          >
+          <a
+            onclick="handleDeleteCategory('{{category._id}}', '{{token}}')"
+            class="btn btn-danger btn-sm"
+            >Delete</a
+          >
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div
+  class="modal fade"
+  id="createCategoryModal"
+  tabindex="-1"
+  aria-labelledby="createCategoryModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <form id="createCategoryForm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="createCategoryModalLabel">
+            Create New Category
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-floating">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="name"
+                  name="name"
+                  required
+                  placeholder="Category Name"
+                />
+                <label for="name">Name</label>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-floating">
+                <select
+                  class="form-select"
+                  id="category"
+                  aria-label="Floating label select example"
+                  name="parent_category"
+                >
+                  <option value="null">No Parent Category</option>
+                  {% for category in categories %}
+                  <option value="{{category._id}}">{{category.name}}</option>
+                  {% endfor %}
+                </select>
+                <label for="category">Parent Category</label>
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-floating">
+                <select
+                  class="form-select"
+                  id="image"
+                  aria-label="Floating label select example"
+                  name="image"
+                >
+                  <option selected value="null">No Image</option>
+                  {% for image in images %}
+                  <option value="{{image._id}}">{{image.name}}</option>
+                  {% endfor %}
+                </select>
+                <label for="image">Image</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Close
+          </button>
+          <a onclick="handleCreateCategory('{{token}}')" class="btn btn-dark"
+            >Create</a
+          >
+        </div>
+      </div>
+    </form>
+  </div>
 </div>
 <script>
-    const handleDeleteCategory = async (id, token) => {
-        const {detail, success} = await deleteMethod(`/api/categories/${id}`, token)
-        const toast = document.getElementById('toast')
-        const toastBody = document.getElementById('toast-body')
-        toastBody.innerHTML = detail
-        if(success){
-            toast.classList.add('text-bg-success', 'show')
-            window.location.reload()
-        }else{
-            toast.classList.add('text-bg-danger', 'show')
-        }
-    }
+  const handleCreateCategory = async (token) => {
+    const form = document.getElementById("createCategoryForm");
+    const formData = new FormData(form);
+    const formDataObj = Object.fromEntries(formData);
+    const { detail, success } = await postMethod(
+      `/api/categories`,
+      formDataObj,
+      token
+    );
+    showToast(detail, success);
+  };
+  const handleDeleteCategory = async (id, token) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Confirm",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        (async () => {
+          const { detail, success } = await deleteMethod(
+            `/api/categories/${id}`,
+            token
+          );
+            showToast(detail, success);
+        })();
+      }
+    });
+  };
 </script>
 
 {% endblock content %}

@@ -3,19 +3,29 @@
 <div class="p-3">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>Images</h1>
-    <a class="btn btn-outline-dark" href="/dashboard/images/create">Create</a>
+    <button
+      type="button"
+      class="btn btn-outline-dark"
+      data-bs-toggle="modal"
+      data-bs-target="#createImageModal"
+    >
+      Upload
+    </button>
   </div>
-  <hr>
+  <hr />
   <div class="d-flex flex-wrap">
     {% for image in images %}
     <div class="card mb-3 me-3" style="width: 14rem">
-      <div class="card-header d-flex justify-content-between align-items-center">
+      <div
+        class="card-header d-flex justify-content-between align-items-center"
+      >
         <h5 class="text-truncate">{{image.name}}</h5>
-        <form action="/api/images/{{image._id}}" method="post">
-          <input type="hidden" name="method" value="delete">
-          <input type="hidden" name="token" value="{{token}}">
-          <button class="btn btn-outline-danger btn-sm d-block"><i class="bi bi-trash"></i></button>
-        </form>
+        <a
+          class="btn btn-outline-danger btn-sm d-block"
+          onclick="handleDeleteImage('{{image._id}}', '{{token}}')"
+        >
+          <i class="bi bi-trash"></i>
+        </a>
       </div>
       <img class="card-img-top" src="{{image.img_url}}" alt="Card image cap" />
     </div>
@@ -23,4 +33,119 @@
   </div>
 </div>
 
+<div
+  class="modal fade"
+  id="createImageModal"
+  tabindex="-1"
+  aria-labelledby="createImageModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <form id="createImageForm" enctype="multipart/form-data">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="createImageModalLabel">
+            Upload New Image
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-floating">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="name"
+                  name="name"
+                  required
+                  placeholder="Product Name"
+                />
+                <label for="name">Name</label>
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <input
+                class="form-control"
+                type="file"
+                name="file"
+                required
+                id="fileInput"
+              />
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  name="is_category"
+                  checked
+                />
+                <label class="form-check-label" for="flexCheckChecked">
+                  Category
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Close
+          </button>
+          <a onclick="handleCreateImage('{{token}}')" class="btn btn-dark"
+            >Upload</a
+          >
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+  const handleCreateImage = async (token) => {
+    const form = document.getElementById("createImageForm");
+    const formData = new FormData(form);
+
+    const response = await fetch("/api/images", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+    const { detail, success } = await response.json();
+    showToast(detail, success);
+  };
+
+  const handleDeleteImage = (id, token) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Confirm",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        (async () => {
+          const { detail, success } = await deleteMethod(`/api/images/${id}`, token);
+          showToast(detail, success);
+        })()
+      }
+    });
+  };
+</script>
 {% endblock content %}

@@ -1,8 +1,28 @@
-{% extends 'layout/dashboard_base.html' %} 
-{% block content %}
+{% extends 'layout/dashboard_base.html' %} {% block content %}
 
-<div class="bg-white w-100 shadow-sm mx-2 p-3 rounded-3">
+<div class="p-3">
+  <div class="mb-3">
     <h1>Users</h1>
+  </div>
+  <hr />
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col">Username</th>
+        <th scope="col">Email</th>
+        <th scope="col">Admin</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ user.username }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.is_admin }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 
 {% endblock content %}
