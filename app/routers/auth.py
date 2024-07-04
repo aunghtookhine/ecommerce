@@ -62,10 +62,11 @@ def register_user(request: Request, data: Register):
         user_dict["password"] = get_hashed_password(user_dict["password"])
         del user_dict["confirm_password"]
         new_user = user_collection.insert_one(user_dict)
-        payload = {"_id": str(new_user.inserted_id)}
-        token = generate_token(payload)
         if new_user.inserted_id:
-            request.session["token"] = token
+            if not request.headers.get('Authorization'):
+                payload = {"_id": str(new_user.inserted_id)}
+                token = generate_token(payload)
+                request.session["token"] = token
             return {"detail": "Successfully Registered.", "success": True}
     except HTTPException as e:
         return {"detail": e.detail, "success": False}

@@ -93,7 +93,7 @@ def validate_username(username):
 
 
 def validate_email(email):
-    regex = "[\w\.-]+@[\w\.-]+\.\w{2,4}"
+    regex = r"[\w\.-]+@[\w\.-]+\.\w{2,4}"
     if not re.match(regex, email):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
