@@ -25,14 +25,13 @@
           <div class="col-md-8">
             <div class="card-body">
               <h5 class="card-title">{{product.name}}</h5>
-              <p class="card-text">{{product.description}}</p>
               <p class="card-text">{{product.price}} Ks</p>
               <p class="d-flex align-items-center">
-                <button class="btn btn-light" onclick="handleQtyDecrease('{{product._id}}')">
+                <button class="btn btn-light" onclick="handleQtyDecrease('{{product._id}}', '{{token}}')">
                   <i class="bi bi-dash-circle"></i>
                 </button>
                 <span class="mx-3">{{product.qty}}</span>
-                <button class="btn btn-light" onclick="handleQtyIncrease('{{product._id}}')">
+                <button class="btn btn-light" onclick="handleQtyIncrease('{{product._id}}', '{{token}}')">
                   <i class="bi bi-plus-circle"></i>
                 </button>
               </p>
@@ -47,73 +46,40 @@
         <h2>ORDER SUMMARY</h2>
         <hr>
           {% for product in products %}
-          <div class="d-flex justify-content-between">
+          <div class="d-flex justify-content-between" style="font-size: 20px;">
             <p>{{product.name}} x {{product.qty}}</p>
             <p>{{product.price * product.qty}} Ks</p>
           </div>
           {% endfor %}
         <hr>
-        <div class="d-flex justify-content-between">
+        <div class="d-flex justify-content-between" style="font-size: 20px;">
             <p>Total</p>
             <p>{{total}} Ks</p>
         </div>
-      <button class="btn btn-lg btn-dark w-100" onclick="handleCheckoutBtn()">Checkout</button>
+      <button class="btn btn-lg btn-dark w-100" onclick="handleCheckoutBtn('{{token}}')">Checkout</button>
     </div>
     {% endif %}
   </div>
 </div>
 
 <script>
-    const handleQtyIncrease = async (product_id) => {
-        try {
-            const response = await fetch('/api/cart/increase', {
-                method: 'POST',
-                headers: {'Content-type': 'application/json', Authorization: `Bearer ${token}`},
-                body: JSON.stringify({'product_id': product_id})
-            })
-            const {detail, success} = await response.json()
-            const toast = document.getElementById('toast')
-            const toastMessage = document.getElementById('toast-message')
-            if(success){
-                window.location.reload()
-            }else{
-                toast.classList.add('show')
-                toastMessage.innerHTML = detail
-                setTimeout(function() {
-                    toast.classList.remove('show');
-                    toastMessage.innerHTML = ''
-                }, 5000);
-            }
-        } catch (error) {
-            console.log(error)
-        }
-    }
-    const handleQtyDecrease = async (product_id) => {
-        try {
-            const response = await fetch('/api/cart/decrease', {
-                method: "POST",
-                headers: {'Content-type': 'application/json', Authorization: `Bearer ${token}`},
-                body: JSON.stringify({'product_id': product_id})
-            })
-            const {detail} = await response.json()
-            window.location.reload()
-        } catch (error) {
-            console.log(error)
-        }
-    }
-    const handleCheckoutBtn = async () => {
-      try {
-        const response = await fetch('/api/checkouts', {
-          method: "POST",
-          headers: {'Content-type': 'application/json', Authorization: `Bearer ${token}`}
-        })
-        const {detail, success} = await response.json()
-        if(success){
-          window.location.href = '/checkout'
-        }  
-      } catch (error) {
-        console.log(error)
+    const handleQtyIncrease = async (product_id, token) => {
+      payload = {
+        product_id
       }
+      const {detail, success} = await postMethod('/api/cart/increase', payload, token)
+      showToast(detail, success)
+    }
+    const handleQtyDecrease = async (product_id, token) => {
+      payload = {
+        product_id
+      }
+      const {detail, success} = await postMethod('/api/cart/decrease', payload, token)
+      showToast(detail,success)
+    }
+    const handleCheckoutBtn = async (token) => {
+      const {detail, success} = await postMethod('/api/checkouts', null, token)
+      showToast(detail, success, '/checkouts')
     }
 </script>
 

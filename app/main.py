@@ -11,14 +11,9 @@ from .routers import (
 )
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from .models.auth import get_user
-from .routers.category import find_categories
-from .routers.product import find_products, find_product
-from .routers.cart import get_cart_items
 from starlette.middleware.sessions import SessionMiddleware
-from .routers.checkout import find_checkouts, find_checkout
-from .models.category import get_category_names
 from fastapi.responses import RedirectResponse
+from .models.auth import check_is_logged_in
 
 templates = Jinja2Templates(directory="app/templates")
 app = FastAPI()
@@ -38,12 +33,22 @@ app.include_router(dashboard_page.router, prefix="/dashboard", tags=["dashboard"
 
 
 @app.get("/login")
-def login(request: Request):
+def login(request: Request, result: dict = Depends(check_is_logged_in)):
+    if result["is_logged_in"]:
+        if not result["is_admin"]:
+            return RedirectResponse("/")
+        else:
+            return RedirectResponse("/dashboard")
     return templates.TemplateResponse("layout/login.html", {"request": request})
 
 
 @app.get("/register")
-def register(request: Request):
+def register(request: Request, result: dict = Depends(check_is_logged_in)):
+    if result["is_logged_in"]:
+        if not result["is_admin"]:
+            return RedirectResponse("/")
+        else:
+            return RedirectResponse("/dashboard")
     return templates.TemplateResponse("layout/register.html", {"request": request})
 
 

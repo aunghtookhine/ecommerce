@@ -15,30 +15,27 @@
   <div class="container">
     <a class="navbar-brand" href="/">Cartopia</a>
     <div>
-      <a type="button" id="cart" class="btn btn-dark position-relative me-3" href="/cart">
-        Cart
+      <a type="button" id="cart" class="btn btn-light position-relative me-3" href="/cart">
+        <i class="bi bi-bag"></i>
           <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
             {{total_qty}}
           </span>
       </a>
-      <button class="btn btn-outline-danger" type="submit" id="logoutBtn" onclick="handleLogout()">Logout</button>
+      {% if token %}
+        <a class="btn btn-outline-danger" onclick="handleLogout('{{token}}')"><i class="bi bi-box-arrow-right"></i></a>
+      {% endif %}
     </div>
   </div>
 </nav>
 <script>
-  const handleLogout = async () => {
-    try {
-      const response = await fetch("/api/auth/logout", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-      const { detail } = await response.json()
-      localStorage.clear()
-      window.location.href = '/login'
-    } catch (error) {
-      console.log("Error:", error)
-    }
+  const handleLogout = async (token) => {
+    const response = await fetch('/api/auth/logout', {
+      method: "POST",
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    const {detail, success} = await response.json();
+    showToast(detail, success, '/login')
   }
 </script>

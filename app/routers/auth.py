@@ -8,6 +8,7 @@ from ..models.auth import (
     ChangePassword,
     validate_password,
     validate_username,
+    validate_email,
 )
 from ..db.mongodb import user_collection
 from ..models.auth import generate_token, get_user
@@ -33,32 +34,41 @@ def find_users():
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def register_user(request: Request, data: Register):
-    user_dict = data.model_dump()
-    error = validate_username(user_dict["username"])
-    if error:
-        return error
-    isUsername = user_collection.find_one({"username": user_dict["username"]})
-    if isUsername:
-        return JSONResponse(
-            status_code=status.HTTP_409_CONFLICT,
-            content={"username": "Username can't be duplicated"},
-        )
+    try:
+        user_dict = data.model_dump()
+        validate_username(user_dict["username"])
+        isUsername = user_collection.find_one({"username": user_dict["username"]})
+        if isUsername:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Username can't be duplicated.",
+            )
 
-    isEmail = user_collection.find_one({"email": user_dict["email"]})
-    if isEmail:
-        return JSONResponse(
-            status_code=status.HTTP_409_CONFLICT,
-            content={"email": "Email can't be duplicated"},
-        )
-    error = validate_password(user_dict["password"])
-    if error:
-        return error
-    user_dict["password"] = get_hashed_password(user_dict["password"])
-    new_user = user_collection.insert_one(user_dict)
-    payload = {"_id": str(new_user.inserted_id)}
-    token = generate_token(payload)
-    request.session["user_id"] = str(new_user.inserted_id)
-    return {"detail": "Successfully Registered.", "token": token}
+        validate_email(user_dict["email"])
+
+        isEmail = user_collection.find_one({"email": user_dict["email"]})
+        if isEmail:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Email can't be duplicated.",
+            )
+        if user_dict["password"] != user_dict["confirm_password"]:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Password and Confirm Password must be same.",
+            )
+        validate_password(user_dict["password"])
+
+        user_dict["password"] = get_hashed_password(user_dict["password"])
+        del user_dict["confirm_password"]
+        new_user = user_collection.insert_one(user_dict)
+        payload = {"_id": str(new_user.inserted_id)}
+        token = generate_token(payload)
+        if new_user.inserted_id:
+            request.session["token"] = token
+            return {"detail": "Successfully Registered.", "success": True}
+    except HTTPException as e:
+        return {"detail": e.detail, "success": False}
 
 
 @router.post("/login", status_code=status.HTTP_200_OK)
@@ -79,7 +89,6 @@ def login_user(request: Request, data: Login):
         payload = {"_id": str(registered_user["_id"])}
         token = generate_token(payload)
         if user.matched_count:
-            request.session["user_id"] = str(registered_user["_id"])
             request.session["token"] = token
             url = "/"
             if registered_user["is_admin"]:
@@ -142,4 +151,4 @@ def clear_session(request: Request, user=Depends(get_user)):
         if not result.bulk_api_result.get("writeErrors"):
             session.pop("cart", None)
     session.clear()
-    return {"detail": "Successfully Cleared"}
+    return {"detail": "Successfully Cleared."}

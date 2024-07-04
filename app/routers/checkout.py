@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
-from ..models.auth import get_user, user_dereference
+from ..models.auth import get_user, user_dereference, decode_token
 from ..models.checkout import Checkout
 from ..models.product import product_dereference
 from ..db.mongodb import product_collection, checkout_collection
@@ -10,30 +10,34 @@ router = APIRouter()
 
 @router.post("/")
 def create_checkout(request: Request, user=Depends(get_user)):
-    user_dbref = DBRef("users", ObjectId(user["_id"]), "ecommerce")
-    session = request.session
-    cart = session.get("cart")
-    detail = []
-    total = 0
-    for product_id, quantity in cart.items():
-        product = product_collection.find_one({"_id": ObjectId(product_id)})
-        total += product["price"] * quantity
-        product_dbref = DBRef("products", ObjectId(product_id), "ecommerce")
-        detail.append({"product": product_dbref, "quantity": quantity})
-
-    checkout = checkout_collection.insert_one(
-        {"user": user_dbref, "detail": detail, "total": total}
-    )
-    if checkout.inserted_id:
+    try:
+        user_dbref = DBRef("users", ObjectId(user["_id"]), "ecommerce")
+        session = request.session
+        cart = session.get("cart")
+        detail = []
+        total = 0
+        for product_id, quantity in cart.items():
+            product = product_collection.find_one({"_id": ObjectId(product_id)})
+            total += product["price"] * quantity
+            product_dbref = DBRef("products", ObjectId(product_id), "ecommerce")
+            detail.append({"product": product_dbref, "quantity": quantity})
+        checkout = checkout_collection.insert_one(
+            {"user": user_dbref, "detail": detail, "total": total}
+        )
+        if not checkout.inserted_id:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
         session.pop("cart")
-        return {"detail": "Successfully added.", "success": True}
+        return {"detail": "Successfully ordered.", "success": True}
+    except HTTPException as e:
+        return {"detail": e.detail, "success": False}
 
 
 @router.get("/")
 def find_checkouts(request: Request, user=Depends(get_user)):
     session = request.session
-    user_id = session.get("user_id")
-    user_dbref = DBRef("users", ObjectId(user_id), "ecommerce")
+    token = session.get("token")
+    payload = decode_token(token)
+    user_dbref = DBRef("users", ObjectId(payload["_id"]), "ecommerce")
     cursor = checkout_collection.find({"user": user_dbref})
     checkouts = []
     for checkout in cursor:

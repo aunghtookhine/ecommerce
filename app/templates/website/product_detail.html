@@ -2,69 +2,85 @@
 <div class="container">
   <div class="row p-3">
     <div class="col-6">
-      <div id="carouselExample" class="carousel slide w-75 mx-auto  img-thumbnail">
+      <div
+        id="carouselExample"
+        class="carousel slide w-75 mx-auto img-thumbnail"
+      >
         <div class="carousel-inner">
           {% for image in product.images%}
           <div class="carousel-item">
-            <img src="{{image.img_url}}" class="d-block w-100" alt="...">
+            <img src="{{image.img_url}}" class="d-block w-100" alt="..." />
           </div>
           {% endfor %}
         </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+        <button
+          class="carousel-control-prev"
+          type="button"
+          data-bs-target="#carouselExample"
+          data-bs-slide="prev"
+        >
           <span class="carousel-control-prev-icon" aria-hidden="true"></span>
           <span class="visually-hidden">Previous</span>
         </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+        <button
+          class="carousel-control-next"
+          type="button"
+          data-bs-target="#carouselExample"
+          data-bs-slide="next"
+        >
           <span class="carousel-control-next-icon" aria-hidden="true"></span>
           <span class="visually-hidden">Next</span>
         </button>
       </div>
     </div>
     <div class="col-6 p-3">
-      <p>
-        {{categories}}
-      </p>
+      <p>{{categories}}</p>
       <h2>{{product.name}}</h2>
       <p>{{product.description}}</p>
       <h5>{{product.price}} Ks</h5>
-      <a href="" class="btn btn-dark mt-3" onclick="handleAddToCart('{{product._id}}')">Add to Cart</a>
+      {% if token %}
+      <a
+        class="btn btn-dark mt-3"
+        onclick="handleAddToCart('{{product._id}}', '{{token}}')"
+        >Add to Cart</a
+      >
+      {% else %}
+      <a class="btn btn-dark mt-3" onclick="handleAddToCart('{{product._id}}')"
+        >Add to Cart</a
+      >
+      {% endif %}
     </div>
   </div>
 </div>
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const firstItem = document.querySelectorAll('.carousel-item')[0]
-    firstItem.classList.add('active')
-  })
-  const handleAddToCart = async (product_id) => {
-    try {
-      const response = await fetch("/api/cart/", {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          product_id: product_id,
-          qty: 1,
-        }),
+  document.addEventListener("DOMContentLoaded", () => {
+    const firstItem = document.querySelectorAll(".carousel-item")[0];
+    firstItem.classList.add("active");
+  });
+  const handleAddToCart = async (product_id, token = null) => {
+    if (!token) {
+      Swal.fire({
+        title: "Please Log In",
+        text: "To add items to your cart, please log in or create an account.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Log In / Sign Up",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = '/login'
+        }
       });
-      const { detail, success } = await response.json();
-      const toast = document.getElementById('toast')
-      const toastMessage = document.getElementById('toast-message')
-      if (success) {
-        window.location.reload()
-      } else {
-        toast.classList.add('show')
-        toastMessage.innerHTML = detail
-        setTimeout(function () {
-          toast.classList.remove('show');
-          toastMessage.innerHTML = ''
-        }, 5000);
+    } else{
+      const payload = {
+        product_id,
+        qty: 1
       }
-    } catch (error) {
-      console.log(error);
+      const {detail, success} = await postMethod('/api/cart', payload, token)
+      showToast(detail, success, '/cart')
     }
+    
   };
 </script>
 {% endblock %}

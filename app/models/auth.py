@@ -7,7 +7,6 @@ from fastapi import Request, Form
 from ..db.mongodb import user_collection
 from bson import ObjectId
 from ..db.mongodb import db
-from fastapi.responses import JSONResponse, RedirectResponse
 
 
 class Login(BaseModel):
@@ -18,21 +17,36 @@ class Login(BaseModel):
     def str_strip(cls, value):
         return value.strip()
 
-    @classmethod
-    def to_form_data(cls, email: str = Form(...), password: str = Form(...)):
-        return cls(email=email, password=password)
+    @field_validator("*")
+    def not_empty(cls, value):
+        if not value:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Fields cannot be empty.",
+            )
+        return value
 
 
 class Register(BaseModel):
     username: str
-    email: EmailStr
+    email: str
     password: str
+    confirm_password: str
     is_admin: bool = False
     is_logged_in: bool = True
 
-    @field_validator("username", "email", "password")
+    @field_validator("username", "email", "password", "confirm_password")
     def str_strip(cls, value):
         return value.strip()
+
+    @field_validator("username", "email", "password", "confirm_password")
+    def not_empty(cls, value):
+        if not value:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Fields cannot be empty.",
+            )
+        return value
 
 
 class ChangePassword(BaseModel):
@@ -49,9 +63,13 @@ class ChangePassword(BaseModel):
         if not value:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Fields cannot be empty",
+                detail="Fields cannot be empty.",
             )
         return value
+
+    # @field_validator('email')
+    # def email_validation(cls, value):
+    #     error
 
     @field_validator("new_password")
     def password_validation(cls, value):
@@ -63,42 +81,51 @@ class ChangePassword(BaseModel):
 
 def validate_username(username):
     if not username:
-        return JSONResponse(
+        raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content={"username": "Username must be provided"},
+            detail="Username must be provided.",
         )
     if len(username.split(" ")) > 1:
-        return JSONResponse(
+        raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content={"username": "Username must be a word"},
+            detail="Username must be a word.",
+        )
+
+
+def validate_email(email):
+    regex = "[\w\.-]+@[\w\.-]+\.\w{2,4}"
+    if not re.match(regex, email):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Email must be valid.",
         )
 
 
 def validate_password(password):
     if len(password) < 8:
-        return JSONResponse(
+        raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"password": "Password must have at least 8 characters"},
+            detail="Password must have at least 8 characters.",
         )
     if not re.search("(?=.*[A-Z])", password):
-        return JSONResponse(
+        raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"password": "Password must have at least one uppercase letter"},
+            detail="Password must have at least one uppercase letter.",
         )
     if not re.search("(?=.*?[a-z])", password):
-        return JSONResponse(
+        raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"password": "Password must have at least one lowercase letter"},
+            detail="Password must have at least one lowercase letter.",
         )
     if not re.search("(?=.*?[0-9])", password):
-        return JSONResponse(
+        raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"password": "Password must have at least one number"},
+            detail="Password must have at least one number.",
         )
     if not re.search("(?=.*?[#?!@$%^&*-])", password):
-        return JSONResponse(
+        raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"password": "Password must have at least one special character"},
+            detail="Password must have at least one special character.",
         )
 
 
@@ -121,11 +148,13 @@ def generate_token(payload):
     return jwt.encode(payload, "ecommerce", algorithm="HS256")
 
 
-def get_user(request: Request, token: str = None):
-    authorization = f"Bearer {token}"
+def decode_token(token):
+    return jwt.decode(token, "ecommerce", algorithms="HS256")
+
+
+def get_user(request: Request):
     if request.headers.get("Authorization"):
         authorization = request.headers.get("Authorization")
-        print(authorization)
     if not authorization:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized1"
@@ -142,7 +171,7 @@ def get_user(request: Request, token: str = None):
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized3"
         )
 
-    payload = jwt.decode(token, "ecommerce", algorithms="HS256")
+    payload = decode_token(token)
     user = user_collection.find_one({"_id": ObjectId(payload["_id"])})
     if not user or not user["is_logged_in"]:
         raise HTTPException(
@@ -158,10 +187,13 @@ def user_dereference(user_dbref):
     return user
 
 
-def check_logged_in(request: Request):
+def check_is_logged_in(request: Request):
     session = request.session
-    user_id = session.get("user_id")
-    user = user_collection.find_one({"_id": ObjectId(user_id)})
-    if not user:
-        return False
-    return True
+    token = session.get("token")
+    if not token:
+        return {"is_logged_in": False, "redirect_url": "/login"}
+    payload = decode_token(token)
+    user = user_collection.find_one({"_id": ObjectId(payload["_id"])})
+    if user and user["is_logged_in"]:
+        return {"is_logged_in": True, "is_admin": user["is_admin"]}
+    return {"is_logged_in": False, "redirect_url": "/login"}
