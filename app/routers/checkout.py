@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from ..models.auth import get_user, user_dereference, decode_token
 from ..models.checkout import Checkout
 from ..models.product import product_dereference
-from ..db.mongodb import product_collection, checkout_collection
+from ..db.mongodb import product_collection, checkout_collection, user_collection
 from bson import ObjectId, DBRef
 
 router = APIRouter()
@@ -37,8 +37,11 @@ def find_checkouts(request: Request, user=Depends(get_user)):
     session = request.session
     token = session.get("token")
     payload = decode_token(token)
+    user = user_collection.find_one({"_id": ObjectId(payload["_id"])})
     user_dbref = DBRef("users", ObjectId(payload["_id"]), "ecommerce")
     cursor = checkout_collection.find({"user": user_dbref})
+    if user["is_admin"]:
+        cursor = checkout_collection.find({})
     checkouts = []
     for checkout in cursor:
         detail = []

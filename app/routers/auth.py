@@ -63,7 +63,7 @@ def register_user(request: Request, data: Register):
         del user_dict["confirm_password"]
         new_user = user_collection.insert_one(user_dict)
         if new_user.inserted_id:
-            if not request.headers.get('Authorization'):
+            if not request.headers.get("Authorization"):
                 payload = {"_id": str(new_user.inserted_id)}
                 token = generate_token(payload)
                 request.session["token"] = token
@@ -93,7 +93,7 @@ def login_user(request: Request, data: Login):
             request.session["token"] = token
             url = "/"
             if registered_user["is_admin"]:
-                url = "/dashboard"
+                url = "/dashboard/checkouts"
             return {"detail": "Successfully Logged In.", "success": True, "url": url}
     except HTTPException as e:
         return {"detail": e.detail, "success": False}

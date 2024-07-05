@@ -67,10 +67,6 @@ class ChangePassword(BaseModel):
             )
         return value
 
-    # @field_validator('email')
-    # def email_validation(cls, value):
-    #     error
-
     @field_validator("new_password")
     def password_validation(cls, value):
         error = validate_password(value)
@@ -195,5 +191,9 @@ def check_is_logged_in(request: Request):
     payload = decode_token(token)
     user = user_collection.find_one({"_id": ObjectId(payload["_id"])})
     if user and user["is_logged_in"]:
-        return {"is_logged_in": True, "is_admin": user["is_admin"]}
+        return {
+            "is_logged_in": True,
+            "is_admin": user["is_admin"],
+            "username": user["username"],
+        }
     return {"is_logged_in": False, "redirect_url": "/login"}

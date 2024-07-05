@@ -32,11 +32,12 @@ class Product(BaseModel):
 
 def product_dereference(product_dbref):
     product = db.dereference(product_dbref)
-    product["_id"] = str(product["_id"])
-    product["category"] = category_dereference(product["category"])
-    images = []
-    for image in product["images"]:
-        image = image_dereference(image)
-        images.append(image)
-    product["images"] = images
+    if product:
+        product["_id"] = str(product["_id"])
+        product["category"] = category_dereference(product["category"])
+        images = []
+        for image in product["images"]:
+            image = image_dereference(image)
+            images.append(image)
+        product["images"] = images
     return product

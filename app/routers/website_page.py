@@ -99,8 +99,6 @@ def checkout_page(request: Request, result: dict = Depends(check_is_logged_in)):
 def pdf(request: Request, checkout_id: str, result: dict = Depends(check_is_logged_in)):
     if not result["is_logged_in"]:
         return RedirectResponse(result["redirect_url"])
-    if result["is_admin"]:
-        return RedirectResponse("/dashboard")
     checkout = find_checkout(checkout_id)
     return templates.TemplateResponse(
         "website/pdf.html", {"request": request, "checkout": checkout}

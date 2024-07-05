@@ -1,0 +1,31 @@
+{% extends 'layout/dashboard_base.html' %} {% block content %}
+<div class="p-3">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Checkouts</h1>
+  </div>
+  <hr>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Order ID</th>
+        <th>Email</th>
+        <th>Total Price</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for checkout in checkouts %}
+      <tr>
+        <td>{{checkout._id}}</td>
+        <td>{{checkout.user.email}}</td>
+        <td>{{checkout.total}}</td>
+        <td>
+          <a href="/dashboard/checkouts/{{checkout._id}}" class="btn btn-sm btn-success">Detail</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock content %}

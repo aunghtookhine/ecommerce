@@ -1,5 +1,4 @@
 {% extends 'layout/dashboard_base.html' %} {% block content %}
-
 <div class="p-3">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>Categories</h1>
@@ -16,9 +15,9 @@
   <table class="table table-striped">
     <thead>
       <tr>
-        <th scope="col">Name</th>
-        <th scope="col">Parent Category</th>
-        <th scope="col">Action</th>
+        <th>Name</th>
+        <th>Parent Category</th>
+        <th>Action</th>
       </tr>
     </thead>
     <tbody>
@@ -101,21 +100,20 @@
             </div>
           </div>
           <div class="row mb-3">
-            <div class="col">
-              <div class="form-floating">
-                <select
-                  class="form-select"
-                  id="image"
-                  aria-label="Floating label select example"
-                  name="image"
-                >
-                  <option selected value="null">No Image</option>
-                  {% for image in images %}
-                  <option value="{{image._id}}">{{image.name}}</option>
-                  {% endfor %}
-                </select>
-                <label for="image">Image</label>
-              </div>
+            <div class="col d-flex justify-content-start flex-wrap gap-3 overflow-auto pt-1" style="max-height: 500px;">
+              {% for img in images %}
+                  {% if 'category' in img.img_url %}
+                    <img
+                      width="100"
+                      src="{{img.img_url}}"
+                      class="img-fluid img-thumbnail"
+                      alt="{{img.name}}"
+                      role="button"
+                      id="{{img._id}}"
+                      onclick="handleImageSelect('{{img._id}}')"
+                    />    
+                  {% endif %}
+              {% endfor %}
             </div>
           </div>
         </div>
@@ -136,10 +134,19 @@
   </div>
 </div>
 <script>
+  let image = ''
+
+  const handleImageSelect = (id) => {
+    const selectedImg = document.querySelector('img.selected')
+    if (selectedImg) selectedImg.classList.remove('selected')
+    document.getElementById(id).classList.add('selected')
+    image = id
+  }
   const handleCreateCategory = async (token) => {
     const form = document.getElementById("createCategoryForm");
     const formData = new FormData(form);
     const formDataObj = Object.fromEntries(formData);
+    if(image) formDataObj.image = image
     const { detail, success } = await postMethod(
       `/api/categories`,
       formDataObj,

@@ -6,157 +6,159 @@
   <hr />
   <div>
     <form id="updateProductForm">
-      <div class="row mb-3">
-        <div class="col">
-          <div class="form-floating">
-            <input
-              type="text"
-              class="form-control"
-              id="name"
-              name="name"
-              required
-              placeholder="Product Name"
-              value="{{product.name}}"
-            />
-            <label for="name">Name</label>
-          </div>
-        </div>
-        <div class="col">
-          <div class="form-floating">
-            <select
-              class="form-select"
-              id="category"
-              aria-label="Floating label select example"
-              name="category"
-            >
-              {% for category in categories %} {% if category._id ==
-              product.category._id %}
-              <option value="{{category._id}}" selected>
-                {{category.name}}
-              </option>
-              {% else %}
-              <option value="{{category._id}}">{{category.name}}</option>
-              {% endif %} {% endfor %}
-            </select>
-            <label for="category">Category</label>
-          </div>
-        </div>
-      </div>
-      <div class="row mb-3">
-        <div class="col">
-          <div class="form-floating">
-            <textarea
-              class="form-control"
-              placeholder="Write a description"
-              id="description"
-              style="height: 150px"
-              name="description"
-              required
-            >
-{{product.description}}</textarea
-            >
-            <label for="description">Description</label>
-          </div>
-        </div>
-      </div>
-      <div class="row mb-3">
-        <div class="col">
-          <div class="form-floating">
-            <input
-              type="number"
-              class="form-control"
-              id="item"
-              name="item"
-              placeholder="Stock"
-              required
-              value="{{product.item}}"
-            />
-            <label for="name">Item</label>
-          </div>
-        </div>
-        <div class="col">
-          <div class="form-floating">
-            <input
-              type="number"
-              class="form-control"
-              id="price"
-              name="price"
-              placeholder="Price"
-              value="{{product.price}}"
-              required
-            />
-            <label for="price">Price</label>
-          </div>
-        </div>
-      </div>
-      <div class="row mb-3">
-        <div class="col">
-          <div class="form-floating">
-            <select
-              class="form-select"
-              multiple
-              id="images"
-              aria-label="Floating label select example"
-              name="images"
-              style="height: 150px"
-            >
-              {% for image in images %}
-                {% if image._id in image_ids %}
-                    <option value="{{image._id}}" selected>{{image.name}}</option>
-                {% else %}
-                    <option value="{{image._id}}">{{image.name}}</option>
-                {% endif %}
-              {% endfor %}
-            </select>
-            <label for="images">Images</label>
-          </div>
-        </div>
-      </div>
-      <div class="row mb-3">
-        <div class="col">
-          <div class="form-check">
-            {% if product.feature_product %}
-            <input
-              class="form-check-input"
-              type="checkbox"
-              name="feature_product"
-              id="flexCheckChecked"
-              checked
-            />
-            {% else %}
-            <input
-              class="form-check-input"
-              type="checkbox"
-              name="feature_product"
-              id="flexCheckChecked"
-            />
-            {% endif %}
-            <label class="form-check-label" for="flexCheckChecked">
-              Feature Product
-            </label>
-          </div>
-        </div>
-      </div>
       <div class="row">
         <div class="col">
-          <a
-            onclick="handleUpdateProduct('{{product._id}}', '{{token}}')"
-            class="btn btn-dark"
-            >Update</a
-          >
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-floating">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="name"
+                  name="name"
+                  required
+                  placeholder="Product Name"
+                  value="{{product.name}}"
+                />
+                <label for="name">Name</label>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-floating">
+                <select
+                  class="form-select"
+                  id="category"
+                  aria-label="Floating label select example"
+                  name="category"
+                >
+                  {% for category in categories %} {% if category._id ==
+                  product.category._id %}
+                  <option value="{{category._id}}" selected>
+                    {{category.name}}
+                  </option>
+                  {% else %}
+                  <option value="{{category._id}}">{{category.name}}</option>
+                  {% endif %} {% endfor %}
+                </select>
+                <label for="category">Category</label>
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-floating">
+                <textarea
+                  class="form-control"
+                  placeholder="Write a description"
+                  id="description"
+                  style="height: 150px"
+                  name="description"
+                  required
+                >{{product.description}}</textarea
+                >
+                <label for="description">Description</label>
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-floating">
+                <input
+                  type="number"
+                  class="form-control"
+                  id="item"
+                  name="item"
+                  placeholder="Stock"
+                  required
+                  value="{{product.item}}"
+                />
+                <label for="name">Item</label>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-floating">
+                <input
+                  type="number"
+                  class="form-control"
+                  id="price"
+                  name="price"
+                  placeholder="Price"
+                  value="{{product.price}}"
+                  required
+                />
+                <label for="price">Price</label>
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-check">
+                
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  name="feature_product"
+                  id="flexCheckChecked"
+                  {% if product.feature_product %} checked {% endif %}
+                />
+                <label class="form-check-label" for="flexCheckChecked">
+                  Feature Product
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <a
+                onclick="handleUpdateProduct('{{product._id}}', '{{token}}')"
+                class="btn btn-dark"
+                >Update</a
+              >
+            </div>
+          </div>
         </div>
+        <div class="col d-flex justify-content-start flex-wrap gap-3">
+          {% for img in images %}
+              {% if 'product' in img.img_url %}
+                  <img
+                      width="100"
+                      src="{{img.img_url}}"
+                      class="img-fluid img-thumbnail '{% if img._id in image_ids %} selected {% endif %}'"
+                      alt="{{img.name}}"
+                      role="button"
+                      id="{{img._id}}"
+                      onclick="handleImageSelect('{{img._id}}')"
+                  />
+              {% endif %}
+          {% endfor %}
+      </div>
       </div>
     </form>
   </div>
 </div>
 <script>
+  let images = []
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const selectedImgs = document.querySelectorAll('img.selected')
+    if (selectedImgs.length) images.push(selectedImg.id)
+  })
+
+  const handleImageSelect = (id) => {
+    const selectedImage = document.getElementById(id)
+    if(images.includes(id)){
+      selectedImage.classList.remove('selected')
+      images = images.filter(img => img != id)
+    }else{
+      selectedImage.classList.add('selected')
+      images.push(id)
+    }
+  }
   const handleUpdateProduct = async (id, token) => {
     const form = document.getElementById('updateProductForm')
     const formData = new FormData(form)
     const formDataObj = Object.fromEntries(formData)
-    const selectedOptions = document.querySelectorAll('#images :checked');
-    const selectedImages = [...selectedOptions].map((option) => option.value)
-    formDataObj.images = selectedImages
+    if(images.length) formDataObj.images = images
     const {detail, success} = await putMethod(`/api/products/${id}`,formDataObj, token);
     showToast(detail, success, '/dashboard/products')
   };

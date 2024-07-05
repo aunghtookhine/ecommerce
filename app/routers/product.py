@@ -27,7 +27,7 @@ def create_product(request: Request, data: Product, user=Depends(get_user)):
         product_dict["images"] = images
         product = product_collection.insert_one(product_dict)
         if product.inserted_id:
-            return {"detail": "Successfully Created", "success": True}
+            return {"detail": "Successfully Created.", "success": True}
     except Exception as e:
         return {"detail": "Something Went Wrong.", "success": False}
 

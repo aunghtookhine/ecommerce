@@ -13,22 +13,15 @@
     </button>
   </div>
   <hr />
-  <div class="d-flex flex-wrap">
+  <div class="d-flex flex-wrap gap-2">
     {% for image in images %}
-    <div class="card mb-3 me-3" style="width: 14rem">
-      <div
-        class="card-header d-flex justify-content-between align-items-center"
-      >
-        <h5 class="text-truncate">{{image.name}}</h5>
-        <a
-          class="btn btn-outline-danger btn-sm d-block"
-          onclick="handleDeleteImage('{{image._id}}', '{{token}}')"
-        >
-          <i class="bi bi-trash"></i>
-        </a>
-      </div>
-      <img class="card-img-top" src="{{image.img_url}}" alt="Card image cap" />
-    </div>
+    <figure class="figure position-relative" style="width: 200px">
+      <img src="{{image.img_url}}" class="img-thumbnail" alt="{{image.name}}">
+      <figcaption class="figure-caption">{{image.name}}</figcaption>
+      <a class="btn btn-sm text-danger rounded-5 position-absolute" style="top: 5px; right: 5px;" onclick="handleDeleteImage('{{image._id}}', '{{token}}')">
+        <i class="bi bi-trash"></i>
+      </a>
+    </figure>
     {% endfor %}
   </div>
 </div>
@@ -114,6 +107,10 @@
   </div>
 </div>
 <script>
+  const handleAllImages = () => {
+    console.log('All')
+  }
+
   const handleCreateImage = async (token) => {
     const form = document.getElementById("createImageForm");
     const formData = new FormData(form);

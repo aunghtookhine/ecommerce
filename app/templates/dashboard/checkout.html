@@ -1,0 +1,45 @@
+{% extends 'layout/dashboard_base.html' %}
+{% block content %}
+<div class="p-3">
+    <h1>Checkout Details</h1>
+    <hr>
+      <div class="border p-3 rounded mb-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <span><strong>Order ID</strong> : {{checkout._id}}</span><br />
+            <span><strong>Total</strong> : {{checkout.total}} Ks</span>
+          </div>
+          <a href="/pdf/{{checkout._id}}" class="btn btn-outline-dark">Print</a>
+        </div>
+        <hr>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Product Image</th>
+              <th scope="col">Product Name</th>
+              <th scope="col">Quantity</th>
+              <th scope="col">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for detail in checkout.detail %}
+            <tr>
+              <td class="w-25">
+                <img
+                  width="100"
+                  src="{{detail.product.images[0].img_url}}"
+                  class="img-fluid img-thumbnail"
+                  alt="{{detail.product.name}}"
+                />
+              </td>
+              <td>{{detail.product.name}}</td>
+              <td>{{detail.quantity}}</td>
+              <td>{{detail.product.price * detail.quantity}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+</div>
+
+{% endblock %}

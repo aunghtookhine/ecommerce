@@ -5,7 +5,7 @@
   <hr />
   <ul class="nav nav-pills flex-column mb-auto">
     <li class="nav-item">
-      <a href="/dashboard" class="nav-link text-white">Dashboard</a>
+      <a href="/dashboard/checkouts" class="nav-link text-white">Checkouts</a>
     </li>
     <li class="nav-item">
       <a href="/dashboard/categories" class="nav-link text-white">Categories</a>
@@ -21,8 +21,15 @@
     </li>
   </ul>
   <hr />
-  <div>
-      <a class="btn btn-danger w-100 fw-bold" onclick="handleLogout('{{token}}')">Log out</a>
+  <div class="dropdown">
+    <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownSidebar" data-bs-toggle="dropdown" aria-expanded="false">
+      <strong>{{username}}</strong>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownSidebar">
+      <li><a class="dropdown-item" href="/dashboard/change-password">Change Password</a></li>
+      <li><hr class="dropdown-divider"></li>
+      <li><a class="dropdown-item" onclick="handleLogout('{{token}}')">Sign out</a></li>
+    </ul>
   </div>
 </div>
 <style>
@@ -36,7 +43,7 @@
     const path = window.location.pathname
     const navLinks = document.querySelectorAll('.nav-link')
     navLinks.forEach((navLink) => {
-      if (navLink.getAttribute('href') === path) {
+      if (path.includes(navLink.getAttribute('href'))) {
         navLink.classList.add('active')
       }
     })

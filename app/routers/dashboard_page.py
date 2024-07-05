@@ -4,8 +4,9 @@ from fastapi.responses import RedirectResponse
 from ..routers.category import find_categories, find_category
 from ..routers.product import find_products, find_product
 from ..routers.image import find_images
+from ..routers.checkout import find_checkouts, find_checkout
 from ..routers.auth import find_users
-from ..models.auth import check_is_logged_in
+from ..models.auth import check_is_logged_in, decode_token
 
 templates = Jinja2Templates(directory="app/templates")
 
@@ -14,14 +15,47 @@ router = APIRouter()
 
 
 @router.get("")
-def home_page(request: Request, result: dict = Depends(check_is_logged_in)):
+def redirect_route():
+    return RedirectResponse("/dashboard/checkouts")
+
+
+@router.get("/checkouts")
+def checkout_page(request: Request, result: dict = Depends(check_is_logged_in)):
     if not result["is_logged_in"]:
         return RedirectResponse(result["redirect_url"])
     if not result["is_admin"]:
         return RedirectResponse("/")
+    checkouts = find_checkouts(request)
     token = request.session.get("token")
     return templates.TemplateResponse(
-        "dashboard/home.html", {"request": request, "token": token}
+        "dashboard/checkouts.html",
+        {
+            "request": request,
+            "token": token,
+            "checkouts": checkouts,
+            "username": result["username"],
+        },
+    )
+
+
+@router.get("/checkouts/{id}")
+def checkout_detail_page(
+    request: Request, id: str, result: dict = Depends(check_is_logged_in)
+):
+    if not result["is_logged_in"]:
+        return RedirectResponse(result["redirect_url"])
+    if not result["is_admin"]:
+        return RedirectResponse("/")
+    checkout = find_checkout(id)
+    token = request.session.get("token")
+    return templates.TemplateResponse(
+        "dashboard/checkout.html",
+        {
+            "request": request,
+            "token": token,
+            "checkout": checkout,
+            "username": result["username"],
+        },
     )
 
 
@@ -41,6 +75,7 @@ def category_page(request: Request, result: dict = Depends(check_is_logged_in)):
             "categories": categories,
             "images": images,
             "token": token,
+            "username": result["username"],
         },
     )
 
@@ -65,6 +100,7 @@ def category_detail_page(
             "categories": categories,
             "images": images,
             "token": token,
+            "username": result["username"],
         },
     )
 
@@ -87,6 +123,7 @@ def product_page(request: Request, result: dict = Depends(check_is_logged_in)):
             "categories": categories,
             "images": images,
             "token": token,
+            "username": result["username"],
         },
     )
 
@@ -115,6 +152,7 @@ def product_detail_page(
             "images": images,
             "image_ids": image_ids,
             "token": token,
+            "username": result["username"],
         },
     )
 
@@ -135,19 +173,8 @@ def image_page(request: Request, result: dict = Depends(check_is_logged_in)):
             "images": images,
             "categories": categories,
             "token": token,
+            "username": result["username"],
         },
-    )
-
-
-@router.get("/images/create")
-def create_image_page(request: Request, result: dict = Depends(check_is_logged_in)):
-    if not result["is_logged_in"]:
-        return RedirectResponse(result["redirect_url"])
-    if not result["is_admin"]:
-        return RedirectResponse("/")
-    token = request.session.get("token")
-    return templates.TemplateResponse(
-        "dashboard/create_image.html", {"request": request, "token": token}
     )
 
 
@@ -165,5 +192,24 @@ def user_page(request: Request, result: dict = Depends(check_is_logged_in)):
             "request": request,
             "users": users,
             "token": token,
+            "username": result["username"],
+        },
+    )
+
+
+@router.get("/change-password")
+def change_password(request: Request, result: dict = Depends(check_is_logged_in)):
+    if not result["is_logged_in"]:
+        return RedirectResponse(result["redirect_url"])
+    if not result["is_admin"]:
+        return RedirectResponse("/")
+    token = request.session.get("token")
+    return templates.TemplateResponse(
+        "dashboard/change_password.html",
+        {
+            "request": request,
+            "token": token,
+            "username": result["username"],
+            "email": result["email"],
         },
     )

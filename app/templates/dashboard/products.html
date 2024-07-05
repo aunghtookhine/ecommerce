@@ -149,22 +149,20 @@
               </div>
             </div>
             <div class="row mb-3">
-              <div class="col">
-                <div class="form-floating">
-                  <select
-                    class="form-select"
-                    multiple
-                    id="images"
-                    aria-label="Floating label select example"
-                    name="images"
-                    style="height: 150px"
-                  >
-                    {% for image in images %}
-                    <option value="{{image._id}}">{{image.name}}</option>
-                    {% endfor %}
-                  </select>
-                  <label for="images">Images</label>
-                </div>
+              <div class="col d-flex justify-content-start flex-wrap gap-3 overflow-auto pt-1" style="max-height: 300px;">
+                {% for img in images %}
+                    {% if 'product' in img.img_url %}
+                      <img
+                        width="100"
+                        src="{{img.img_url}}"
+                        class="img-fluid img-thumbnail"
+                        alt="{{img.name}}"
+                        role="button"
+                        id="{{img._id}}"
+                        onclick="handleImageSelect('{{img._id}}')"
+                      />    
+                    {% endif %}
+                {% endfor %}
               </div>
             </div>
             <div class="row mb-3">
@@ -202,6 +200,18 @@
   </div>
 </div>
 <script>
+  let images = []
+
+  const handleImageSelect = (id) => {
+    const selectedImage = document.getElementById(id)
+    if(images.includes(id)){
+      selectedImage.classList.remove('selected')
+      images = images.filter(img => img != id)
+    }else{
+      selectedImage.classList.add('selected')
+      images.push(id)
+    }
+  }
   const handleDeleteProduct = (id, token) => {
     Swal.fire({
       title: "Are you sure?",
@@ -227,6 +237,7 @@
     const form = document.getElementById("createProductForm");
     const formData = new FormData(form);
     const formDataObj = Object.fromEntries(formData);
+    if(images.length) formDataObj.images = images
     const selectedOptions = document.querySelectorAll("#images :checked");
     const selectedImages = [...selectedOptions].map((option) => option.value);
     formDataObj.images = selectedImages;
