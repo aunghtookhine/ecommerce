@@ -61,6 +61,7 @@ def register_user(request: Request, data: Register):
 
         user_dict["password"] = get_hashed_password(user_dict["password"])
         del user_dict["confirm_password"]
+        print(user_dict)
         new_user = user_collection.insert_one(user_dict)
         if new_user.inserted_id:
             if not request.headers.get("Authorization"):
@@ -87,7 +88,11 @@ def login_user(request: Request, data: Login):
         user = user_collection.update_one(
             {"email": data_dict["email"]}, {"$set": {"is_logged_in": True}}
         )
-        payload = {"_id": str(registered_user["_id"])}
+        payload = {
+            "_id": str(registered_user["_id"]),
+            "username": registered_user["username"],
+            "email": registered_user["email"],
+        }
         token = generate_token(payload)
         if user.matched_count:
             request.session["token"] = token
@@ -103,6 +108,7 @@ def login_user(request: Request, data: Login):
 def change_password(data: ChangePassword, user=Depends(get_user)):
     try:
         data_dict = data.model_dump()
+        validate_email(data_dict["email"])
         user = user_collection.find_one({"_id": ObjectId(user["_id"])})
         if not data_dict["email"] == user["email"]:
             raise HTTPException(
@@ -131,7 +137,7 @@ def change_password(data: ChangePassword, user=Depends(get_user)):
         if user.acknowledged:
             return {"detail": "Successfully Changed Password.", "success": True}
     except HTTPException as e:
-        return {"detail": e.detail, "success": True}
+        return {"detail": e.detail, "success": False}
 
 
 @router.post("/logout", status_code=status.HTTP_200_OK)

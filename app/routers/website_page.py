@@ -5,7 +5,7 @@ from .cart import get_cart_items
 from .checkout import find_checkout, find_checkouts
 from ..models.category import get_category_names
 from fastapi.templating import Jinja2Templates
-from ..models.auth import check_is_logged_in
+from ..models.auth import check_is_logged_in, decode_token
 
 
 templates = Jinja2Templates(directory="app/templates")
@@ -17,6 +17,9 @@ router = APIRouter()
 def root(request: Request):
     products = find_products()
     token = request.session.get("token")
+    payload = {}
+    if token:
+        payload = decode_token(token)
     cart_items = get_cart_items(request)
     total_qty = 0
     for qty in cart_items.values():
@@ -28,6 +31,7 @@ def root(request: Request):
             "products": products,
             "total_qty": total_qty,
             "token": token,
+            "username": payload.get("username"),
         },
     )
 
@@ -41,6 +45,9 @@ def product_detail_page(request: Request, product_id: str):
         total_qty += qty
     categories = get_category_names(product["category"])
     token = request.session.get("token")
+    payload = {}
+    if token:
+        payload = decode_token(token)
     return templates.TemplateResponse(
         "website/product_detail.html",
         {
@@ -49,6 +56,7 @@ def product_detail_page(request: Request, product_id: str):
             "total_qty": total_qty,
             "categories": categories,
             "token": token,
+            "username": payload.get("username"),
         },
     )
 
@@ -66,9 +74,18 @@ def cart_page(
         total += product["price"] * product["qty"]
         products.append(product)
     token = request.session.get("token")
+    payload = {}
+    if token:
+        payload = decode_token(token)
     return templates.TemplateResponse(
         "website/cart.html",
-        {"request": request, "products": products, "total": total, "token": token},
+        {
+            "request": request,
+            "products": products,
+            "total": total,
+            "token": token,
+            "username": payload.get("username"),
+        },
     )
 
 
@@ -84,6 +101,9 @@ def checkout_page(request: Request, result: dict = Depends(check_is_logged_in)):
     for qty in cart_items.values():
         total_qty += qty
     token = request.session.get("token")
+    payload = {}
+    if token:
+        payload = decode_token(token)
     return templates.TemplateResponse(
         "website/checkout.html",
         {
@@ -91,8 +111,23 @@ def checkout_page(request: Request, result: dict = Depends(check_is_logged_in)):
             "checkouts": checkouts,
             "total_qty": total_qty,
             "token": token,
+            "username": payload.get("username"),
         },
     )
+
+
+# @router.get("/change-password")
+# def change_password_page(request: Request, result: dict = Depends(check_is_logged_in)):
+#     token = request.session.get("token")
+#     cart_items = get_cart_items(request)
+#     total_qty = 0
+#     for qty in cart_items.values():
+#         total_qty += qty
+
+#     return templates.TemplateResponse(
+#         "website/change_password.html",
+#         {"request": request, "token": token, "total_qty": total_qty},
+#     )
 
 
 @router.get("/pdf/{checkout_id}")

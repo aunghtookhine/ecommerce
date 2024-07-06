@@ -25,17 +25,16 @@ const putMethod = async (resource, payload, token) => {
 };
 
 const patchMethod = async (resource, payload, token) => {
-  console.log(resource);
-  // const response = await fetch(resource, {
-  //   method: "PATCH",
-  //   headers: {
-  //     Authorization: `Bearer ${token}`,
-  //     "Content-type": "application/json",
-  //   },
-  //   body: JSON.stringify(payload),
-  // });
-  // const data = await response.json();
-  // return data;
+  const response = await fetch(resource, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json();
+  return data;
 };
 
 const deleteMethod = async (resource, token) => {

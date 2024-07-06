@@ -27,7 +27,7 @@ def create_checkout(request: Request, user=Depends(get_user)):
         if not checkout.inserted_id:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
         session.pop("cart")
-        return {"detail": "Successfully ordered.", "success": True}
+        return {"detail": "Successfully Ordered.", "success": True}
     except HTTPException as e:
         return {"detail": e.detail, "success": False}
 
