@@ -53,6 +53,7 @@ class ChangePassword(BaseModel):
     email: str
     old_password: str
     new_password: str
+    confirm_password: str
 
     @field_validator("*")
     def str_strip(cls, value):
@@ -67,12 +68,12 @@ class ChangePassword(BaseModel):
             )
         return value
 
-    @field_validator("new_password")
-    def password_validation(cls, value):
-        error = validate_password(value)
-        if error:
-            return error
-        return value
+    # @field_validator("new_password")
+    # def password_validation(cls, value):
+    #     error = validate_password(value)
+    #     if error:
+    #         return error
+    #     return value
 
 
 def validate_username(username):
@@ -100,27 +101,27 @@ def validate_email(email):
 def validate_password(password):
     if len(password) < 8:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Password must have at least 8 characters.",
         )
     if not re.search("(?=.*[A-Z])", password):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Password must have at least one uppercase letter.",
         )
     if not re.search("(?=.*?[a-z])", password):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Password must have at least one lowercase letter.",
         )
     if not re.search("(?=.*?[0-9])", password):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Password must have at least one number.",
         )
     if not re.search("(?=.*?[#?!@$%^&*-])", password):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Password must have at least one special character.",
         )
 

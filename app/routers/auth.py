@@ -101,28 +101,37 @@ def login_user(request: Request, data: Login):
 
 @router.patch("/change-password", status_code=status.HTTP_200_OK)
 def change_password(data: ChangePassword, user=Depends(get_user)):
-    data_dict = data.model_dump()
-    user = user_collection.find_one({"_id": ObjectId(user["_id"])})
-    if not data_dict["email"] == user["email"]:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="You must enter your email"
+    try:
+        data_dict = data.model_dump()
+        user = user_collection.find_one({"_id": ObjectId(user["_id"])})
+        if not data_dict["email"] == user["email"]:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="You must enter your email.",
+            )
+        if not check_password(user["password"], data_dict["old_password"]):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Wrong Credentials"
+            )
+        if not data_dict["new_password"] == data_dict["confirm_password"]:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="New Password and Confirm Password must be same.",
+            )
+        if check_password(user["password"], data_dict["new_password"]):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Please provide new password",
+            )
+        validate_password(data_dict["new_password"])
+        new_password = get_hashed_password(data_dict["new_password"])
+        user = user_collection.update_one(
+            {"_id": user["_id"]}, {"$set": {"password": new_password}}
         )
-    user_docu = user_collection.find_one({"email": data_dict["email"]})
-    if not check_password(user_docu["password"], data_dict["old_password"]):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Wrong Credentials"
-        )
-    if check_password(user_docu["password"], data_dict["new_password"]):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Please provide new password",
-        )
-    new_password = get_hashed_password(data_dict["new_password"])
-    user = user_collection.update_one(
-        {"_id": user_docu["_id"]}, {"$set": {"password": new_password}}
-    )
-    if user.acknowledged:
-        return {"detail": "Successfully Updated."}
+        if user.acknowledged:
+            return {"detail": "Successfully Changed Password.", "success": True}
+    except HTTPException as e:
+        return {"detail": e.detail, "success": True}
 
 
 @router.post("/logout", status_code=status.HTTP_200_OK)

@@ -210,6 +210,5 @@ def change_password(request: Request, result: dict = Depends(check_is_logged_in)
             "request": request,
             "token": token,
             "username": result["username"],
-            "email": result["email"],
         },
     )
