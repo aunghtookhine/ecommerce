@@ -31,6 +31,21 @@ def create_product(request: Request, data: Product, user=Depends(get_user)):
     except Exception as e:
         return {"detail": "Something Went Wrong.", "success": False}
 
+@router.get('/feature', status_code=status.HTTP_200_OK)
+def find_feature_products(user=Depends(get_user)):
+    cursor = product_collection.find({'feature_product': True})
+    products = []
+    for product in cursor:
+        product["_id"] = str(product["_id"])
+        product["category"] = category_dereference(product["category"])
+        images = []
+        for image_id in product["images"]:
+            image = image_dereference(image_id)
+            if image:
+                images.append(image)
+        product["images"] = images
+        products.append(product)
+    return products
 
 @router.get("/", status_code=status.HTTP_200_OK)
 def find_products(user=Depends(get_user)):

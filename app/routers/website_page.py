@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import RedirectResponse
-from .product import find_product, find_products
+from .product import find_product, find_products, find_feature_products
 from .cart import get_cart_items
 from .checkout import find_checkout, find_checkouts
 from ..models.category import get_category_names
@@ -16,6 +16,7 @@ router = APIRouter()
 @router.get("/")
 def root(request: Request):
     products = find_products()
+    feature_products = find_feature_products()
     token = request.session.get("token")
     payload = {}
     if token:
@@ -32,6 +33,7 @@ def root(request: Request):
             "total_qty": total_qty,
             "token": token,
             "username": payload.get("username"),
+            "feature_products": feature_products
         },
     )
 
