@@ -22,8 +22,10 @@ templates = Jinja2Templates(directory="app/templates")
 
 
 @router.get("/users", status_code=status.HTTP_200_OK)
-def find_users():
+def find_users(q: str | None = None):
     cursor = user_collection.find({})
+    if q != None:
+        cursor = user_collection.find({"username": {"$regex": q, "$options": "i"}})
     users = []
     for user in cursor:
         user["_id"] = ObjectId(user["_id"])

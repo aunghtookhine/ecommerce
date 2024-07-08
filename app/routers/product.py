@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Depends, Form, Request
-from fastapi.responses import RedirectResponse
-from ..models.product import Product
+from ..models.product import Product, filter_products_by_category
 from ..db.mongodb import product_collection
 from bson import ObjectId, DBRef
 from ..models.auth import get_user
@@ -31,9 +30,10 @@ def create_product(request: Request, data: Product, user=Depends(get_user)):
     except Exception as e:
         return {"detail": "Something Went Wrong.", "success": False}
 
-@router.get('/feature', status_code=status.HTTP_200_OK)
+
+@router.get("/feature", status_code=status.HTTP_200_OK)
 def find_feature_products(user=Depends(get_user)):
-    cursor = product_collection.find({'feature_product': True})
+    cursor = product_collection.find({"feature_product": True})
     products = []
     for product in cursor:
         product["_id"] = str(product["_id"])
@@ -47,8 +47,9 @@ def find_feature_products(user=Depends(get_user)):
         products.append(product)
     return products
 
+
 @router.get("/", status_code=status.HTTP_200_OK)
-def find_products(user=Depends(get_user)):
+def find_products(category: str | None = None, user=Depends(get_user)):
     cursor = product_collection.find({})
     products = []
     for product in cursor:
@@ -61,6 +62,8 @@ def find_products(user=Depends(get_user)):
                 images.append(image)
         product["images"] = images
         products.append(product)
+    if category:
+        products = filter_products_by_category(products, category)
     return products
 
 

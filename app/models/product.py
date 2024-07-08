@@ -41,3 +41,20 @@ def product_dereference(product_dbref):
             images.append(image)
         product["images"] = images
     return product
+
+
+def filter_products_by_category(products, category_id):
+    new_products = []
+
+    def check_category(category):
+        if category and category["_id"] == category_id:
+            return True
+        if category and category["parent_category"]:
+            return check_category(category["parent_category"])
+        return False
+
+    for product in products:
+        if check_category(product["category"]):
+            new_products.append(product)
+
+    return new_products

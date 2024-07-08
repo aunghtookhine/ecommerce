@@ -158,12 +158,14 @@ def product_detail_page(
 
 
 @router.get("/images")
-def image_page(request: Request, result: dict = Depends(check_is_logged_in)):
+def image_page(
+    request: Request, q: str | None = None, result: dict = Depends(check_is_logged_in)
+):
     if not result["is_logged_in"]:
         return RedirectResponse(result["redirect_url"])
     if not result["is_admin"]:
         return RedirectResponse("/")
-    images = find_images()
+    images = find_images(q)
     categories = find_categories()
     token = request.session.get("token")
     return templates.TemplateResponse(
@@ -179,12 +181,14 @@ def image_page(request: Request, result: dict = Depends(check_is_logged_in)):
 
 
 @router.get("/users")
-def user_page(request: Request, result: dict = Depends(check_is_logged_in)):
+def user_page(
+    request: Request, q: str | None = None, result: dict = Depends(check_is_logged_in)
+):
     if not result["is_logged_in"]:
         return RedirectResponse(result["redirect_url"])
     if not result["is_admin"]:
         return RedirectResponse("/")
-    users = find_users()
+    users = find_users(q)
     token = request.session.get("token")
     return templates.TemplateResponse(
         "dashboard/users.html",

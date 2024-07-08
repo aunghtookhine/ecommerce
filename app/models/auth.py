@@ -68,13 +68,6 @@ class ChangePassword(BaseModel):
             )
         return value
 
-    # @field_validator("new_password")
-    # def password_validation(cls, value):
-    #     error = validate_password(value)
-    #     if error:
-    #         return error
-    #     return value
-
 
 def validate_username(username):
     if not username:

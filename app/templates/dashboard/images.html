@@ -13,6 +13,16 @@
     </button>
   </div>
   <hr />
+  <div class="btn-group mb-3" role="group" aria-label="Basic radio toggle button group">
+    <input type="radio" class="btn-check" name='all' id="allImages" autocomplete="off" onclick="handleFilterImages()">
+    <label class="btn btn-outline-dark" for="allImages">All</label>
+  
+    <input type="radio" class="btn-check" name="product" id="productImages" autocomplete="off" onclick="handleFilterImages( 'product')">
+    <label class="btn btn-outline-dark" for="productImages">Product</label>
+  
+    <input type="radio" class="btn-check" name="category" id="categoryImages" autocomplete="off" onclick="handleFilterImages( 'category')">
+    <label class="btn btn-outline-dark" for="categoryImages">Category</label>
+  </div>
   <div class="d-flex flex-wrap gap-2">
     {% for image in images %}
     <figure class="figure position-relative" style="width: 200px">
@@ -107,9 +117,21 @@
   </div>
 </div>
 <script>
-  const handleAllImages = () => {
-    console.log('All')
-  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const myParam = urlParams.get('q');
+    const btns = document.querySelectorAll('.btn-check')
+    if(myParam){
+      btns.forEach((btn)=>{
+          if(btn.getAttribute('id').includes(myParam)){
+            btn.setAttribute('checked', true)
+          }
+      })
+    }else{
+      document.getElementById('allImages').setAttribute('checked', true)
+    }
+  })
 
   const handleCreateImage = async (token) => {
     const form = document.getElementById("createImageForm");
@@ -144,5 +166,13 @@
       }
     });
   };
+
+  const handleFilterImages = (type=null) => {
+    const btns = document.querySelectorAll('.btn-check')
+    btns.forEach((btn)=>{
+      btn.removeAttribute('checked')
+    })
+    window.location.href = type ? `/dashboard/images?q=${type}` : '/dashboard/images'
+  }
 </script>
 {% endblock content %}

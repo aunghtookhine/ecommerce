@@ -6,14 +6,14 @@
     <p class="display-4">
       Discover Your Style Haven
     </p>
-    <a href="" class="btn btn-dark">Browse All</a>
+    <a href="/products" class="btn btn-dark">Browse All</a>
   </div>
 </div>
-<!-- <div class="container">
-  <p class="display-6 my-3">Feature Products</p>
-  <div class="d-flex justify-content-around overflow-auto">
+<div class="container">
+  <p class="display-6 my-4">Feature Products</p>
+  <div class="d-flex justify-content-start flex-wrap">
     {% for product in feature_products %}
-    <div class="card mb-3" style="width: 15rem; height: auto">
+    <div class="card mb-3 me-3" style="width: 15rem; height: auto">
       {% if product.images|length %}
       <img class="card-img-top" src="{{product.images[0].img_url}}" alt="{{product.name}}">
       {% else %}
@@ -28,28 +28,22 @@
     </div>
     {% endfor %}
   </div>
-</div> -->
-
-
-<!-- <div class="container mt-5">
-  <div class="d-flex justify-content-around flex-wrap">
-    {% for product in products %}
-    <div class="card mb-3" style="width: 15rem; height: auto">
-      {% if product.images|length %}
-      <img class="card-img-top" src="{{product.images[0].img_url}}" alt="{{product.name}}">
-      {% else %}
-      <img class="card-img-top" src="/static/assets/no_image.jpeg" alt="{{product.name}}" height="297px">
-      {% endif %}
-
-      <div class="card-body">
-        <h5 class="card-title text-truncate">{{product.name}}</h5>
-        <p class="card-text text-truncate">{{product.description}}</p>
-        <a href="/products/{{product._id}}" class="btn btn-dark float-end">Detail</a>
-      </div>
+</div>
+<div class="container-fluid bg-secondary-subtle">
+  <div class="container py-5">
+    <p class="display-6 mb-5 text-center fw-bold">Shop by Category</p>
+    <div class="d-flex justify-content-around">
+      {% for category in parent_categories %}
+        <div>
+          <img src="{{category.image.img_url}}" class="img-thumbnail" alt="..." width="300px">
+          <p>{{category.name}}</p>
+        </div>
+      {% endfor %}
     </div>
-    {% endfor %}
   </div>
-</div> -->
+
+</div>
+
 <!-- Change Password Modal -->
 <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel"
   aria-hidden="true">

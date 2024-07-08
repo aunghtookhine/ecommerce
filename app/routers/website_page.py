@@ -3,6 +3,7 @@ from fastapi.responses import RedirectResponse
 from .product import find_product, find_products, find_feature_products
 from .cart import get_cart_items
 from .checkout import find_checkout, find_checkouts
+from .category import find_parent_categories, find_categories
 from ..models.category import get_category_names
 from fastapi.templating import Jinja2Templates
 from ..models.auth import check_is_logged_in, decode_token
@@ -14,8 +15,8 @@ router = APIRouter()
 
 
 @router.get("/")
-def root(request: Request):
-    products = find_products()
+def home_page(request: Request):
+    parent_categories = find_parent_categories()
     feature_products = find_feature_products()
     token = request.session.get("token")
     payload = {}
@@ -29,11 +30,33 @@ def root(request: Request):
         "website/index.html",
         {
             "request": request,
-            "products": products,
             "total_qty": total_qty,
             "token": token,
             "username": payload.get("username"),
-            "feature_products": feature_products
+            "feature_products": feature_products,
+            "parent_categories": parent_categories,
+        },
+    )
+
+
+@router.get("/products")
+def products_page(request: Request, category: str | None = None):
+    if category:
+        products = find_products(category)
+    else:
+        products = find_products()
+    categories = find_categories()
+    cart_items = get_cart_items(request)
+    total_qty = 0
+    for qty in cart_items.values():
+        total_qty += qty
+    return templates.TemplateResponse(
+        "website/products.html",
+        {
+            "request": request,
+            "products": products,
+            "total_qty": total_qty,
+            "categories": categories,
         },
     )
 

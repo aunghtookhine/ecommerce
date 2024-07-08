@@ -25,7 +25,7 @@ async def upload(
     request: Request,
     name: str = Form(...),
     file: UploadFile = File(...),
-    is_category: bool = False,
+    is_category: bool = Form(default=False),
     user=Depends(get_user),
 ):
     try:
@@ -66,8 +66,10 @@ async def upload(
 
 
 @router.get("/")
-def find_images(user=Depends(get_user)):
+def find_images(q: str | None = None, user=Depends(get_user)):
     cursor = image_collection.find({})
+    if q != None:
+        cursor = image_collection.find({"img_url": {"$regex": q}})
     images = []
     for image in cursor:
         image["_id"] = str(image["_id"])
