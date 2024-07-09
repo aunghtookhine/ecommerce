@@ -4,14 +4,17 @@ from ..models.checkout import Checkout
 from ..models.product import product_dereference
 from ..db.mongodb import product_collection, checkout_collection, user_collection
 from bson import ObjectId, DBRef
+from dotenv import load_dotenv
+import os
 
+load_dotenv(override=True)
 router = APIRouter()
 
 
 @router.post("/")
 def create_checkout(request: Request, user=Depends(get_user)):
     try:
-        user_dbref = DBRef("users", ObjectId(user["_id"]), "ecommerce")
+        user_dbref = DBRef("users", ObjectId(user["_id"]), os.getenv("DATABASE_NAME"))
         session = request.session
         cart = session.get("cart")
         detail = []
@@ -19,7 +22,9 @@ def create_checkout(request: Request, user=Depends(get_user)):
         for product_id, quantity in cart.items():
             product = product_collection.find_one({"_id": ObjectId(product_id)})
             total += product["price"] * quantity
-            product_dbref = DBRef("products", ObjectId(product_id), "ecommerce")
+            product_dbref = DBRef(
+                "products", ObjectId(product_id), os.getenv("DATABASE_NAME")
+            )
             detail.append({"product": product_dbref, "quantity": quantity})
         checkout = checkout_collection.insert_one(
             {"user": user_dbref, "detail": detail, "total": total}
@@ -33,12 +38,12 @@ def create_checkout(request: Request, user=Depends(get_user)):
 
 
 @router.get("/")
-def find_checkouts(request: Request, user=Depends(get_user)):
+def find_checkouts(request: Request, q: str | None = None, user=Depends(get_user)):
     session = request.session
     token = session.get("token")
     payload = decode_token(token)
     user = user_collection.find_one({"_id": ObjectId(payload["_id"])})
-    user_dbref = DBRef("users", ObjectId(payload["_id"]), "ecommerce")
+    user_dbref = DBRef("users", ObjectId(payload["_id"]), os.getenv("DATABASE_NAME"))
     cursor = checkout_collection.find({"user": user_dbref})
     if user["is_admin"]:
         cursor = checkout_collection.find({})

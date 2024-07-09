@@ -1,12 +1,13 @@
 {% extends 'layout/dashboard_base.html' %} {% block content %}
 
 <div class="p-3">
-  <div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="mb-3">
     <h1>Users</h1>
-    <div class="d-flex">
-      <div class="input-group me-3">
-        <input type="text" id="searchUsername" class="form-control" placeholder="Search..." aria-label="Search" aria-describedby="searchUsername" onkeyup="handleUsernameSearch()">
-        <a class="btn btn-dark" type="button" ><i class="bi bi-search"></i></a>
+    <div class="d-flex justify-content-between">
+      <div class="input-group me-3 w-25">
+        <input id="searchUsername" class="form-control search" placeholder="Search..." aria-label="Search" aria-describedby="searchUsername" autocomplete="additional-name">
+        <a class="btn btn-outline-dark" type="button" onclick="handleSearch('searchUsername', 'users')"><i class="bi bi-search"></i></a>
+        <a class="btn btn-outline-dark" type="button" onclick="handleSearchBoxClear('users')"><i class="bi bi-x"></i></a>
       </div>
       <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#createUserModal">
         Create
@@ -20,6 +21,7 @@
         <th scope="col">Username</th>
         <th scope="col">Email</th>
         <th scope="col">Admin</th>
+        <th>Action</th>
       </tr>
     </thead>
     <tbody>
@@ -28,6 +30,7 @@
         <td>{{ user.username }}</td>
         <td>{{ user.email }}</td>
         <td>{{ user.is_admin }}</td>
+        <td><a href="/dashboard/users/{{user._id}}" class="btn btn-warning">Edit</a></td>
       </tr>
       {% endfor %}
     </tbody>
@@ -120,10 +123,6 @@
     })
     const { detail, success } = await response.json()
     showToast(detail, success)
-  }
-  const handleUsernameSearch = () => {
-    const username = document.getElementById('searchUsername')
-    window.location.href = `/dashboard/users?q=${username.value}`
   }
 </script>
 {% endblock content %}

@@ -8,6 +8,11 @@ from ..db.mongodb import user_collection
 from bson import ObjectId
 from ..db.mongodb import db
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv(override=True)
+
 
 class Login(BaseModel):
     email: str
@@ -53,6 +58,24 @@ class ChangePassword(BaseModel):
     email: str
     old_password: str
     new_password: str
+    confirm_password: str
+
+    @field_validator("*")
+    def str_strip(cls, value):
+        return value.strip()
+
+    @field_validator("*")
+    def not_empty(cls, value):
+        if not value:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Fields cannot be empty.",
+            )
+        return value
+
+
+class EditPassword(BaseModel):
+    password: str
     confirm_password: str
 
     @field_validator("*")
@@ -135,11 +158,11 @@ def check_password(hashed_password, plaintext):
 
 
 def generate_token(payload):
-    return jwt.encode(payload, "ecommerce", algorithm="HS256")
+    return jwt.encode(payload, os.getenv("JWT_SECRET_KEY"), algorithm="HS256")
 
 
 def decode_token(token):
-    return jwt.decode(token, "ecommerce", algorithms="HS256")
+    return jwt.decode(token, os.getenv("JWT_SECRET_KEY"), algorithms="HS256")
 
 
 def get_user(request: Request):

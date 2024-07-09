@@ -5,8 +5,14 @@ from bson import ObjectId, DBRef
 from ..models.auth import get_user
 from ..models.category import category_dereference
 from ..models.image import image_dereference
+from dotenv import load_dotenv
+import os
+import math
 
+load_dotenv(override=True)
 router = APIRouter()
+
+PAGE_SIZE = 10
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
@@ -15,14 +21,18 @@ def create_product(request: Request, data: Product, user=Depends(get_user)):
         product_dict = data.model_dump()
         if product_dict["category"] != "null":
             product_dict["category"] = DBRef(
-                "categories", ObjectId(product_dict["category"]), "ecommerce"
+                "categories",
+                ObjectId(product_dict["category"]),
+                os.getenv("DATABASE_NAME"),
             )
         else:
             product_dict["category"] = None
         images = []
         if product_dict["images"]:
             for image in product_dict["images"]:
-                images.append(DBRef("images", ObjectId(image), "ecommerce"))
+                images.append(
+                    DBRef("images", ObjectId(image), os.getenv("DATABASE_NAME"))
+                )
         product_dict["images"] = images
         product = product_collection.insert_one(product_dict)
         if product.inserted_id:
@@ -49,8 +59,23 @@ def find_feature_products(user=Depends(get_user)):
 
 
 @router.get("/", status_code=status.HTTP_200_OK)
-def find_products(category: str | None = None, user=Depends(get_user)):
-    cursor = product_collection.find({})
+def find_products(request: Request, user=Depends(get_user)):
+    q = request.query_params.get("q")
+    category = request.query_params.get("category")
+    page = request.query_params.get("page")
+    if not page:
+        page = 1
+    skip = (int(page) - 1) * PAGE_SIZE
+    if q != None:
+        cursor = product_collection.find({"name": {"$regex": q, "$options": "i"}})
+        count = product_collection.count_documents(
+            {"name": {"$regex": q, "$options": "i"}}
+        )
+    else:
+        cursor = product_collection.find({}).skip(skip).limit(PAGE_SIZE)
+        count = product_collection.count_documents({})
+
+    pages = math.ceil(count / PAGE_SIZE)
     products = []
     for product in cursor:
         product["_id"] = str(product["_id"])
@@ -64,7 +89,7 @@ def find_products(category: str | None = None, user=Depends(get_user)):
         products.append(product)
     if category:
         products = filter_products_by_category(products, category)
-    return products
+    return {"products": products, "pages": pages}
 
 
 @router.get("/{id}", status_code=status.HTTP_200_OK)
@@ -90,11 +115,11 @@ def update_product(id: str, data: Product, user=Depends(get_user)):
     try:
         data_dict = data.model_dump()
         data_dict["category"] = DBRef(
-            "categories", ObjectId(data_dict["category"]), "ecommerce"
+            "categories", ObjectId(data_dict["category"]), os.getenv("DATABASE_NAME")
         )
         images = []
         for image in data_dict["images"]:
-            image = DBRef("images", ObjectId(image), "ecommerce")
+            image = DBRef("images", ObjectId(image), os.getenv("DATABASE_NAME"))
             images.append(image)
         data_dict["images"] = images
         product = product_collection.find_one_and_update(

@@ -66,7 +66,8 @@ async def upload(
 
 
 @router.get("/")
-def find_images(q: str | None = None, user=Depends(get_user)):
+def find_images(request: Request, user=Depends(get_user)):
+    q = request.query_params.get("q")
     cursor = image_collection.find({})
     if q != None:
         cursor = image_collection.find({"img_url": {"$regex": q}})

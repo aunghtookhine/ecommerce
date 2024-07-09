@@ -9,6 +9,7 @@ from ..models.auth import (
     validate_password,
     validate_username,
     validate_email,
+    EditPassword,
 )
 from ..db.mongodb import user_collection
 from ..models.auth import generate_token, get_user
@@ -22,16 +23,36 @@ templates = Jinja2Templates(directory="app/templates")
 
 
 @router.get("/users", status_code=status.HTTP_200_OK)
-def find_users(q: str | None = None):
+def find_users(request: Request):
+    q = request.query_params.get("q")
     cursor = user_collection.find({})
     if q != None:
-        cursor = user_collection.find({"username": {"$regex": q, "$options": "i"}})
+        cursor = user_collection.find(
+            {
+                "$or": [
+                    {"username": {"$regex": q, "$options": "i"}},
+                    {"email": {"$regex": q, "$options": "i"}},
+                ]
+            }
+        )
     users = []
     for user in cursor:
         user["_id"] = ObjectId(user["_id"])
         del user["password"]
         users.append(user)
     return users
+
+
+@router.get("/users/{id}", status_code=status.HTTP_200_OK)
+def find_user(id: str):
+    user = user_collection.find_one({"_id": ObjectId(id)})
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Invalid User Id."
+        )
+    user["_id"] = str(user["_id"])
+    del user["password"]
+    return user
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
@@ -63,11 +84,13 @@ def register_user(request: Request, data: Register):
 
         user_dict["password"] = get_hashed_password(user_dict["password"])
         del user_dict["confirm_password"]
-        print(user_dict)
         new_user = user_collection.insert_one(user_dict)
         if new_user.inserted_id:
             if not request.headers.get("Authorization"):
-                payload = {"_id": str(new_user.inserted_id)}
+                payload = {
+                    "_id": str(new_user.inserted_id),
+                    "username": user_dict["username"],
+                }
                 token = generate_token(payload)
                 request.session["token"] = token
             return {"detail": "Successfully Registered.", "success": True}
@@ -93,7 +116,6 @@ def login_user(request: Request, data: Login):
         payload = {
             "_id": str(registered_user["_id"]),
             "username": registered_user["username"],
-            "email": registered_user["email"],
         }
         token = generate_token(payload)
         if user.matched_count:
@@ -102,6 +124,27 @@ def login_user(request: Request, data: Login):
             if registered_user["is_admin"]:
                 url = "/dashboard/checkouts"
             return {"detail": "Successfully Logged In.", "success": True, "url": url}
+    except HTTPException as e:
+        return {"detail": e.detail, "success": False}
+
+
+@router.patch("/{id}", status_code=status.HTTP_200_OK)
+def edit_password(id: str, data: EditPassword, user=Depends(get_user)):
+    try:
+        data_dict = data.model_dump()
+        if not data_dict["password"] == data_dict["confirm_password"]:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Password and Confirm Password must be same.",
+            )
+        validate_password(data_dict["password"])
+        new_password = get_hashed_password(data_dict["password"])
+        user = user_collection.update_one(
+            {"_id": ObjectId(id)},
+            {"$set": {"password": new_password}},
+        )
+        if user.acknowledged:
+            return {"detail": "Successfully Changed Password.", "success": True}
     except HTTPException as e:
         return {"detail": e.detail, "success": False}
 

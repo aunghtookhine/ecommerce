@@ -6,8 +6,14 @@ from bson import ObjectId, DBRef
 from ..models.auth import get_user
 from ..models.image import image_dereference
 from ..models.category import category_dereference
+from dotenv import load_dotenv
+import os
+import math
 
+load_dotenv(override=True)
 router = APIRouter()
+
+PAGE_SIZE = 10
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
@@ -16,13 +22,15 @@ def create_category(request: Request, data: Category, user=Depends(get_user)):
         data_dict = data.model_dump()
         if not data_dict["parent_category"] == "null":
             data_dict["parent_category"] = DBRef(
-                "categories", ObjectId(data_dict["parent_category"]), "ecommerce"
+                "categories",
+                ObjectId(data_dict["parent_category"]),
+                os.getenv("DATABASE_NAME"),
             )
         else:
             data_dict["parent_category"] = None
         if not data_dict["image"] == "null":
             data_dict["image"] = DBRef(
-                "images", ObjectId(data_dict["image"]), "ecommerce"
+                "images", ObjectId(data_dict["image"]), os.getenv("DATABASE_NAME")
             )
         else:
             data_dict["image"] = None
@@ -34,8 +42,14 @@ def create_category(request: Request, data: Category, user=Depends(get_user)):
 
 
 @router.get("/", status_code=status.HTTP_200_OK)
-def find_categories(user=Depends(get_user)):
-    cursor = category_collection.find({})
+def find_categories(request: Request, user=Depends(get_user)):
+    page = request.query_params.get("page")
+    if not page:
+        page = 1
+    skip = (int(page) - 1) * PAGE_SIZE
+    cursor = category_collection.find({}).skip(skip).limit(PAGE_SIZE)
+    count = category_collection.count_documents({})
+    pages = math.ceil(count / PAGE_SIZE)
     categories = []
     for category in cursor:
         category["_id"] = str(category["_id"])
@@ -45,7 +59,7 @@ def find_categories(user=Depends(get_user)):
             )
         category["image"] = image_dereference(category["image"])
         categories.append(category)
-    return categories
+    return {"categories": categories, "pages": pages}
 
 
 @router.get("/parents", status_code=status.HTTP_200_OK)
@@ -83,13 +97,15 @@ def update_category(
         data_dict = data.model_dump()
         if not data_dict["parent_category"] == "null":
             data_dict["parent_category"] = DBRef(
-                "categories", ObjectId(data_dict["parent_category"]), "ecommerce"
+                "categories",
+                ObjectId(data_dict["parent_category"]),
+                os.getenv("DATABASE_NAME"),
             )
         else:
             data_dict["parent_category"] = None
         if not data_dict["image"] == "null":
             data_dict["image"] = DBRef(
-                "images", ObjectId(data_dict["image"]), "ecommerce"
+                "images", ObjectId(data_dict["image"]), os.getenv("DATABASE_NAME")
             )
         else:
             data_dict["image"] = None

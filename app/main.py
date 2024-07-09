@@ -14,14 +14,20 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.responses import RedirectResponse
 from .models.auth import check_is_logged_in
+from fastapi_pagination.ext.pymongo import paginate
+from fastapi_pagination import add_pagination
+
+from dotenv import load_dotenv
+import os
+
+load_dotenv(override=True)
 
 templates = Jinja2Templates(directory="app/templates")
 app = FastAPI()
+add_pagination(app)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
-app.add_middleware(SessionMiddleware, secret_key="ecommerce")
-
+app.add_middleware(SessionMiddleware, secret_key=os.getenv("SESSION_SECRET_KEY"))
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(category.router, prefix="/api/categories", tags=["category"])
 app.include_router(product.router, prefix="/api/products", tags=["product"])

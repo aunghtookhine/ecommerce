@@ -19,30 +19,21 @@
     <div class="col-10">
       <div class="d-flex justify-content-start flex-wrap">
         {% for product in products %}
-        <div class="card mb-3 me-3" style="width: 15rem; height: auto">
-          {% if product.images|length %}
-          <img
-            class="card-img-top"
-            src="{{product.images[0].img_url}}"
-            alt="{{product.name}}"
-          />
-          {% else %}
-          <img
-            class="card-img-top"
-            src="/static/assets/no_image.jpeg"
-            alt="{{product.name}}"
-            height="297px"
-          />
-          {% endif %}
-
-          <div class="card-body">
-            <h5 class="card-title text-truncate">{{product.name}}</h5>
-            <p class="card-text text-truncate">{{product.description}}</p>
-            <a href="/products/{{product._id}}" class="btn btn-dark float-end"
-              >Detail</a
-            >
+        <a href="/products/{{product._id}}" class="text-decoration-none">
+          <div class="card mb-3 me-3" style="width: 15rem; height: auto">
+            
+            {% if product.images|length %}
+            <img class="card-img-top" src="{{product.images[0].img_url}}" alt="{{product.name}}">
+            {% else %}
+            <img class="card-img-top" src="/static/assets/no_image.jpeg" alt="{{product.name}}">
+            {% endif %}
+    
+            <div class="card-body">
+              <h5 class="card-title text-truncate">{{product.name}}</h5>
+              <p class="card-text text-truncate">{{product.description}}</p>
+            </div>
           </div>
-        </div>
+        </a>
         {% endfor %}
       </div>
     </div>

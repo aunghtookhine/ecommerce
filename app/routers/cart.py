@@ -29,7 +29,7 @@ def add_to_cart(data: Cart, request: Request, user=Depends(get_user)):
         else:
             cart_items[data_dict["product_id"]] = data_dict["qty"]
         session["cart"] = cart_items
-        return {"detail": "Successfully added to cart.", "success": True}
+        return {"detail": "Successfully Added To Cart.", "success": True}
     except HTTPException as e:
         return {"detail": e.detail, "success": False}
 
@@ -55,7 +55,7 @@ def increase_qty(data: AdjustQty, request: Request, user=Depends(get_user)):
         update_stock(data_dict["product_id"], -1)
         cart_items[data_dict["product_id"]] += 1
         request.session["cart"] = cart_items
-        return {"detail": "Successfully added to cart.", "success": True}
+        return {"detail": "Successfully Added To Cart.", "success": True}
     except HTTPException as e:
         return {"detail": e.detail, "success": False}
 

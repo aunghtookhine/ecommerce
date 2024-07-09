@@ -5,7 +5,7 @@ from ..routers.category import find_categories, find_category
 from ..routers.product import find_products, find_product
 from ..routers.image import find_images
 from ..routers.checkout import find_checkouts, find_checkout
-from ..routers.auth import find_users
+from ..routers.auth import find_users, find_user
 from ..models.auth import check_is_logged_in, decode_token
 
 templates = Jinja2Templates(directory="app/templates")
@@ -65,8 +65,9 @@ def category_page(request: Request, result: dict = Depends(check_is_logged_in)):
         return RedirectResponse(result["redirect_url"])
     if not result["is_admin"]:
         return RedirectResponse("/")
-    categories = find_categories()
-    images = find_images()
+    categories_dict = find_categories(request)
+    categories, pages = categories_dict.values()
+    images = find_images(request)
     token = request.session.get("token")
     return templates.TemplateResponse(
         "dashboard/categories.html",
@@ -75,6 +76,7 @@ def category_page(request: Request, result: dict = Depends(check_is_logged_in)):
             "categories": categories,
             "images": images,
             "token": token,
+            "pages": pages,
             "username": result["username"],
         },
     )
@@ -90,7 +92,7 @@ def category_detail_page(
         return RedirectResponse("/")
     category = find_category(id)
     categories = find_categories()
-    images = find_images()
+    images = find_images(request)
     token = request.session.get("token")
     return templates.TemplateResponse(
         "dashboard/edit_category.html",
@@ -111,9 +113,10 @@ def product_page(request: Request, result: dict = Depends(check_is_logged_in)):
         return RedirectResponse(result["redirect_url"])
     if not result["is_admin"]:
         return RedirectResponse("/")
-    products = find_products()
-    categories = find_categories()
-    images = find_images()
+    products_dict = find_products(request)
+    products, pages = products_dict.values()
+    categories = find_categories(request)
+    images = find_images(request)
     token = request.session.get("token")
     return templates.TemplateResponse(
         "dashboard/products.html",
@@ -124,6 +127,7 @@ def product_page(request: Request, result: dict = Depends(check_is_logged_in)):
             "images": images,
             "token": token,
             "username": result["username"],
+            "pages": pages,
         },
     )
 
@@ -137,7 +141,7 @@ def product_detail_page(
     if not result["is_admin"]:
         return RedirectResponse("/")
     product = find_product(id)
-    images = find_images()
+    images = find_images(request)
     image_ids = []
     for image in product["images"]:
         image_ids.append(image["_id"])
@@ -158,14 +162,12 @@ def product_detail_page(
 
 
 @router.get("/images")
-def image_page(
-    request: Request, q: str | None = None, result: dict = Depends(check_is_logged_in)
-):
+def image_page(request: Request, result: dict = Depends(check_is_logged_in)):
     if not result["is_logged_in"]:
         return RedirectResponse(result["redirect_url"])
     if not result["is_admin"]:
         return RedirectResponse("/")
-    images = find_images(q)
+    images = find_images(request)
     categories = find_categories()
     token = request.session.get("token")
     return templates.TemplateResponse(
@@ -181,20 +183,41 @@ def image_page(
 
 
 @router.get("/users")
-def user_page(
-    request: Request, q: str | None = None, result: dict = Depends(check_is_logged_in)
-):
+def user_page(request: Request, result: dict = Depends(check_is_logged_in)):
     if not result["is_logged_in"]:
         return RedirectResponse(result["redirect_url"])
     if not result["is_admin"]:
         return RedirectResponse("/")
-    users = find_users(q)
+    users = find_users(request)
     token = request.session.get("token")
     return templates.TemplateResponse(
         "dashboard/users.html",
         {
             "request": request,
             "users": users,
+            "token": token,
+            "username": result["username"],
+        },
+    )
+
+
+@router.get("/users/{id}")
+def user_detail_page(
+    request: Request,
+    id: str,
+    result: dict = Depends(check_is_logged_in),
+):
+    if not result["is_logged_in"]:
+        return RedirectResponse(result["redirect_url"])
+    if not result["is_admin"]:
+        return RedirectResponse("/")
+    user = find_user(id)
+    token = request.session.get("token")
+    return templates.TemplateResponse(
+        "dashboard/edit_user.html",
+        {
+            "request": request,
+            "user": user,
             "token": token,
             "username": result["username"],
         },

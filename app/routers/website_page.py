@@ -40,11 +40,8 @@ def home_page(request: Request):
 
 
 @router.get("/products")
-def products_page(request: Request, category: str | None = None):
-    if category:
-        products = find_products(category)
-    else:
-        products = find_products()
+def products_page(request: Request):
+    products = find_products(request)
     categories = find_categories()
     cart_items = get_cart_items(request)
     total_qty = 0

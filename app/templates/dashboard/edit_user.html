@@ -1,0 +1,60 @@
+{% extends 'layout/dashboard_base.html' %} {% block content %}
+
+<div class="p-3">
+    <div class="mb-3">
+        <h1>Edit User</h1>
+    </div>
+    <hr />
+    <div>
+        <form id="editUserForm">
+            <div class="row mb-3">
+                <div class="col">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="username" name="username" required
+                            placeholder="Username" value="{{user.username}}" disabled />
+                        <label for="username">Username</label>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="email" name="email" required placeholder="Email" value="{{user.email}}" disabled/>
+                        <label for="email">Email</label>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    <div class="form-floating">
+                        <input type="password" class="form-control" id="password" name="password" required
+                            placeholder="Password"/>
+                        <label for="password">Password</label>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-floating">
+                        <input type="password" class="form-control" id="confirmPassword" name="confirm_password"
+                            required placeholder="Confirm Password" />
+                        <label for="confirmPassword">Confirm Password</label>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <a onclick="handleEditUser('{{user._id}}','{{token}}')" class="btn btn-dark">Save</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    const handleEditUser = async (id, token) => {
+        const form = document.getElementById('editUserForm')
+        const formData = new FormData(form)
+        const formDataObj = Object.fromEntries(formData)
+        const {detail, success} = await patchMethod(`/api/auth/${id}`, formDataObj, token)
+        showToast(detail, success, '/dashboard/users')
+    }
+</script>
+
+
+{% endblock %}
