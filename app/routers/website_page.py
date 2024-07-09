@@ -42,7 +42,7 @@ def home_page(request: Request):
 @router.get("/products")
 def products_page(request: Request):
     products = find_products(request)
-    categories = find_categories()
+    categories = find_categories(request)
     cart_items = get_cart_items(request)
     total_qty = 0
     for qty in cart_items.values():

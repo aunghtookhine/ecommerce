@@ -7,13 +7,24 @@ const handleSearchBoxClear = (path) => {
 };
 const previousPage = (path, pages) => {
   const urlParams = new URLSearchParams(window.location.search);
-  const page = Number(urlParams.get("page"));
-  const previous = page ? (page === 1 ? pages : pages - 1) : pages;
+  const currentPage = Number(urlParams.get("page"));
+  const previous = currentPage
+    ? currentPage === 1
+      ? pages
+      : Number(pages) - 1
+    : pages;
   window.location.href = `/dashboard/${path}?page=${previous}`;
 };
 const nextPage = (path, pages) => {
   const urlParams = new URLSearchParams(window.location.search);
-  const page = Number(urlParams.get("page"));
-  const next = page ? (page === Number(pages) ? 1 : page + 1) : 2;
+  const currentPage = Number(urlParams.get("page"));
+  const next = currentPage
+    ? currentPage === Number(pages)
+      ? 1
+      : currentPage + 1
+    : 1 === Number(pages)
+    ? 1
+    : 2;
+  console.log(next);
   window.location.href = `/dashboard/${path}?page=${next}`;
 };

@@ -15,7 +15,7 @@
     {% for product in feature_products %}
     <a href="/products/{{product._id}}" class="text-decoration-none">
       <div class="card mb-3 me-3" style="width: 15rem; height: auto">
-        
+
         {% if product.images|length %}
         <img class="card-img-top" src="{{product.images[0].img_url}}" alt="{{product.name}}">
         {% else %}
@@ -36,16 +36,33 @@
     <p class="display-6 mb-5 text-center fw-bold">Shop by Category</p>
     <div class="d-flex justify-content-around">
       {% for category in parent_categories %}
-        <div>
-          <a href="/products?category={{category._id}}" class="text-decoration-none text-dark">
-            <img src="{{category.image.img_url}}" class="img-thumbnail" alt="..." width="300px">
-            <p>{{category.name}}</p>
-          </a>
-        </div>
+      <div>
+        <a href="/products?category={{category._id}}" class="text-decoration-none text-dark">
+          <img src="{{category.image.img_url}}" class="img-thumbnail" alt="..." width="300px">
+          <p>{{category.name}}</p>
+        </a>
+      </div>
       {% endfor %}
     </div>
   </div>
-
+</div>
+<div class="container-fluid bg-dark text-white d-flex flex-column justify-content-center align-items-center"
+  style="height: 200px;">
+  <h3>Cartopia</h3>
+  <p class="text-center w-75">Welcome to Cartopia, your ultimate fashion destination. We offer a curated selection of
+    the
+    latest
+    trends and
+    timeless styles, celebrating diversity and sustainability in fashion. Our commitment to quality and exceptional
+    customer service ensures a seamless shopping experience. Join us in our fashion revolution and express your true
+    self with Cartopia.</p>
+  <div>
+    <span class="me-3 fs-5"><i class="bi bi-facebook"></i></span>
+    <span class="me-3 fs-5"><i class="bi bi-twitter"></i></span>
+    <span class="me-3 fs-5"><i class="bi bi-youtube"></i></span>
+    <span class="me-3 fs-5"><i class="bi bi-instagram"></i></span>
+  </div>
+</div>
 </div>
 
 <!-- Change Password Modal -->

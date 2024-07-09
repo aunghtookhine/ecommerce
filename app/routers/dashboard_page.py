@@ -25,7 +25,8 @@ def checkout_page(request: Request, result: dict = Depends(check_is_logged_in)):
         return RedirectResponse(result["redirect_url"])
     if not result["is_admin"]:
         return RedirectResponse("/")
-    checkouts = find_checkouts(request)
+    checkouts_dict = find_checkouts(request)
+    checkouts, pages = checkouts_dict.values()
     token = request.session.get("token")
     return templates.TemplateResponse(
         "dashboard/checkouts.html",
@@ -34,6 +35,8 @@ def checkout_page(request: Request, result: dict = Depends(check_is_logged_in)):
             "token": token,
             "checkouts": checkouts,
             "username": result["username"],
+            'pages': pages,
+            "checkouts": checkouts
         },
     )
 
@@ -91,7 +94,8 @@ def category_detail_page(
     if not result["is_admin"]:
         return RedirectResponse("/")
     category = find_category(id)
-    categories = find_categories()
+    categories_dict = find_categories(request)
+    categories = categories_dict['categories']
     images = find_images(request)
     token = request.session.get("token")
     return templates.TemplateResponse(
@@ -115,7 +119,8 @@ def product_page(request: Request, result: dict = Depends(check_is_logged_in)):
         return RedirectResponse("/")
     products_dict = find_products(request)
     products, pages = products_dict.values()
-    categories = find_categories(request)
+    categories_dict = find_categories(request)
+    categories = categories_dict['categories']
     images = find_images(request)
     token = request.session.get("token")
     return templates.TemplateResponse(
@@ -145,7 +150,8 @@ def product_detail_page(
     image_ids = []
     for image in product["images"]:
         image_ids.append(image["_id"])
-    categories = find_categories()
+    categories_dict = find_categories(request)
+    categories = categories_dict['categories']
     token = request.session.get("token")
     return templates.TemplateResponse(
         "dashboard/edit_product.html",
@@ -168,7 +174,8 @@ def image_page(request: Request, result: dict = Depends(check_is_logged_in)):
     if not result["is_admin"]:
         return RedirectResponse("/")
     images = find_images(request)
-    categories = find_categories()
+    categories_dict = find_categories(request)
+    categories = categories_dict['categories']
     token = request.session.get("token")
     return templates.TemplateResponse(
         "dashboard/images.html",

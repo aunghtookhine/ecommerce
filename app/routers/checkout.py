@@ -6,10 +6,11 @@ from ..db.mongodb import product_collection, checkout_collection, user_collectio
 from bson import ObjectId, DBRef
 from dotenv import load_dotenv
 import os
+import math
 
 load_dotenv(override=True)
 router = APIRouter()
-
+PAGE_SIZE = 10
 
 @router.post("/")
 def create_checkout(request: Request, user=Depends(get_user)):
@@ -39,14 +40,23 @@ def create_checkout(request: Request, user=Depends(get_user)):
 
 @router.get("/")
 def find_checkouts(request: Request, q: str | None = None, user=Depends(get_user)):
+    page = request.query_params.get("page")
+    if not page:
+        page = 1
+    skip = (int(page) - 1) * PAGE_SIZE
     session = request.session
     token = session.get("token")
     payload = decode_token(token)
     user = user_collection.find_one({"_id": ObjectId(payload["_id"])})
-    user_dbref = DBRef("users", ObjectId(payload["_id"]), os.getenv("DATABASE_NAME"))
-    cursor = checkout_collection.find({"user": user_dbref})
     if user["is_admin"]:
-        cursor = checkout_collection.find({})
+        cursor = checkout_collection.find({}).skip(skip).limit(PAGE_SIZE)
+        count = checkout_collection.count_documents({})
+    else:
+        user_dbref = DBRef("users", ObjectId(payload["_id"]), os.getenv("DATABASE_NAME"))
+        cursor = checkout_collection.find({"user": user_dbref})
+        count = checkout_collection.count_documents({"user": user_dbref})
+
+    pages = math.ceil(count / PAGE_SIZE)
     checkouts = []
     for checkout in cursor:
         detail = []
@@ -56,7 +66,7 @@ def find_checkouts(request: Request, q: str | None = None, user=Depends(get_user
             product_detail["product"] = product_dereference(product_detail["product"])
             detail.append(product_detail)
         checkouts.append(checkout)
-    return checkouts
+    return {"checkouts": checkouts, 'pages': pages}
 
 
 @router.get("/{checkout_id}")
