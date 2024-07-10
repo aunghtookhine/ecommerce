@@ -35,8 +35,8 @@ def checkout_page(request: Request, result: dict = Depends(check_is_logged_in)):
             "token": token,
             "checkouts": checkouts,
             "username": result["username"],
-            'pages': pages,
-            "checkouts": checkouts
+            "pages": pages,
+            "checkouts": checkouts,
         },
     )
 
@@ -69,7 +69,7 @@ def category_page(request: Request, result: dict = Depends(check_is_logged_in)):
     if not result["is_admin"]:
         return RedirectResponse("/")
     categories_dict = find_categories(request)
-    categories, pages = categories_dict.values()
+    categories, page_categories, pages = categories_dict.values()
     images = find_images(request)
     token = request.session.get("token")
     return templates.TemplateResponse(
@@ -77,6 +77,7 @@ def category_page(request: Request, result: dict = Depends(check_is_logged_in)):
         {
             "request": request,
             "categories": categories,
+            "page_categories": page_categories,
             "images": images,
             "token": token,
             "pages": pages,
@@ -95,7 +96,7 @@ def category_detail_page(
         return RedirectResponse("/")
     category = find_category(id)
     categories_dict = find_categories(request)
-    categories = categories_dict['categories']
+    categories = categories_dict["categories"]
     images = find_images(request)
     token = request.session.get("token")
     return templates.TemplateResponse(
@@ -119,8 +120,7 @@ def product_page(request: Request, result: dict = Depends(check_is_logged_in)):
         return RedirectResponse("/")
     products_dict = find_products(request)
     products, pages = products_dict.values()
-    categories_dict = find_categories(request)
-    categories = categories_dict['categories']
+    categories = find_categories(request)
     images = find_images(request)
     token = request.session.get("token")
     return templates.TemplateResponse(
@@ -128,6 +128,7 @@ def product_page(request: Request, result: dict = Depends(check_is_logged_in)):
         {
             "request": request,
             "products": products,
+            "categories": categories,
             "categories": categories,
             "images": images,
             "token": token,
@@ -150,8 +151,7 @@ def product_detail_page(
     image_ids = []
     for image in product["images"]:
         image_ids.append(image["_id"])
-    categories_dict = find_categories(request)
-    categories = categories_dict['categories']
+    categories = find_categories(request)
     token = request.session.get("token")
     return templates.TemplateResponse(
         "dashboard/edit_product.html",
@@ -163,6 +163,7 @@ def product_detail_page(
             "image_ids": image_ids,
             "token": token,
             "username": result["username"],
+            "categories": categories,
         },
     )
 
@@ -174,15 +175,12 @@ def image_page(request: Request, result: dict = Depends(check_is_logged_in)):
     if not result["is_admin"]:
         return RedirectResponse("/")
     images = find_images(request)
-    categories_dict = find_categories(request)
-    categories = categories_dict['categories']
     token = request.session.get("token")
     return templates.TemplateResponse(
         "dashboard/images.html",
         {
             "request": request,
             "images": images,
-            "categories": categories,
             "token": token,
             "username": result["username"],
         },
@@ -195,13 +193,15 @@ def user_page(request: Request, result: dict = Depends(check_is_logged_in)):
         return RedirectResponse(result["redirect_url"])
     if not result["is_admin"]:
         return RedirectResponse("/")
-    users = find_users(request)
+    users_dict = find_users(request)
+    users, pages = users_dict.values()
     token = request.session.get("token")
     return templates.TemplateResponse(
         "dashboard/users.html",
         {
             "request": request,
             "users": users,
+            "pages": pages,
             "token": token,
             "username": result["username"],
         },

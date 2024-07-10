@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse
 from ..models.category import Category
 from ..db.mongodb import category_collection, db
 from bson import ObjectId, DBRef
-from ..models.auth import get_user
+from ..models.auth import get_user, check_authorization
 from ..models.image import image_dereference
 from ..models.category import category_dereference
 from dotenv import load_dotenv
@@ -17,7 +17,12 @@ PAGE_SIZE = 10
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create_category(request: Request, data: Category, user=Depends(get_user)):
+def create_category(
+    request: Request,
+    data: Category,
+    user=Depends(get_user),
+    check_auth=Depends(check_authorization),
+):
     try:
         data_dict = data.model_dump()
         if not data_dict["parent_category"] == "null":
@@ -43,14 +48,8 @@ def create_category(request: Request, data: Category, user=Depends(get_user)):
 
 @router.get("/", status_code=status.HTTP_200_OK)
 def find_categories(request: Request, user=Depends(get_user)):
-    page = request.query_params.get("page")
-    if not page:
-        page = 1
-    skip = (int(page) - 1) * PAGE_SIZE
-    cursor = category_collection.find({}).skip(skip).limit(PAGE_SIZE)
-    count = category_collection.count_documents({})
-    pages = math.ceil(count / PAGE_SIZE)
     categories = []
+    cursor = category_collection.find({}).sort("name")
     for category in cursor:
         category["_id"] = str(category["_id"])
         if category["parent_category"]:
@@ -59,7 +58,32 @@ def find_categories(request: Request, user=Depends(get_user)):
             )
         category["image"] = image_dereference(category["image"])
         categories.append(category)
-    return {"categories": categories, "pages": pages}
+
+    if "/dashboard/categories" in str(request.url):
+        page = request.query_params.get("page")
+        if not page:
+            page = 1
+        skip = (int(page) - 1) * PAGE_SIZE
+        cursor = category_collection.find({}).skip(skip).limit(PAGE_SIZE)
+        count = category_collection.count_documents({})
+        pages = math.ceil(count / PAGE_SIZE)
+
+        pageCategories = []
+        for category in cursor:
+            category["_id"] = str(category["_id"])
+            if category["parent_category"]:
+                category["parent_category"] = category_dereference(
+                    category["parent_category"]
+                )
+            category["image"] = image_dereference(category["image"])
+            pageCategories.append(category)
+        return {
+            "categories": categories,
+            "page_categories": pageCategories,
+            "pages": pages,
+        }
+
+    return categories
 
 
 @router.get("/parents", status_code=status.HTTP_200_OK)
@@ -92,6 +116,7 @@ def update_category(
     id: str,
     data: Category,
     user=Depends(get_user),
+    check_auth=Depends(check_authorization),
 ):
     try:
         data_dict = data.model_dump()
@@ -123,7 +148,12 @@ def update_category(
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_category(request: Request, id: str, user=Depends(get_user)):
+def delete_category(
+    request: Request,
+    id: str,
+    user=Depends(get_user),
+    check_auth=Depends(check_authorization),
+):
     try:
         category = category_collection.delete_one({"_id": ObjectId(id.strip())})
         if not category.deleted_count:

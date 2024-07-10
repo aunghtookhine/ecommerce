@@ -41,7 +41,8 @@ def home_page(request: Request):
 
 @router.get("/products")
 def products_page(request: Request):
-    products = find_products(request)
+    products_dict = find_products(request)
+    products = products_dict["products"]
     categories = find_categories(request)
     cart_items = get_cart_items(request)
     total_qty = 0
@@ -117,7 +118,8 @@ def checkout_page(request: Request, result: dict = Depends(check_is_logged_in)):
         return RedirectResponse(result["redirect_url"])
     if result["is_admin"]:
         return RedirectResponse("/dashboard")
-    checkouts = find_checkouts(request)
+    checkouts_dict = find_checkouts(request)
+    checkouts = checkouts_dict["checkouts"]
     cart_items = get_cart_items(request)
     total_qty = 0
     for qty in cart_items.values():
@@ -136,20 +138,6 @@ def checkout_page(request: Request, result: dict = Depends(check_is_logged_in)):
             "username": payload.get("username"),
         },
     )
-
-
-# @router.get("/change-password")
-# def change_password_page(request: Request, result: dict = Depends(check_is_logged_in)):
-#     token = request.session.get("token")
-#     cart_items = get_cart_items(request)
-#     total_qty = 0
-#     for qty in cart_items.values():
-#         total_qty += qty
-
-#     return templates.TemplateResponse(
-#         "website/change_password.html",
-#         {"request": request, "token": token, "total_qty": total_qty},
-#     )
 
 
 @router.get("/pdf/{checkout_id}")

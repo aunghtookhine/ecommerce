@@ -1,4 +1,4 @@
-{% extends 'layout/main_base.html' %} {% block content %}
+{% extends 'layout/website_base.html' %} {% block content %}
 <div class="container">
   <h1 class="my-5">YOUR ORDER</h1>
   <div class="row">
@@ -32,12 +32,22 @@
             {% for detail in checkout.detail %}
             <tr>
               <td class="w-25">
+                {% if detail.product.images|length %}
                 <img
                   width="100"
                   src="{{detail.product.images[0].img_url}}"
                   class="img-fluid img-thumbnail"
                   alt="{{detail.product.name}}"
                 />
+                {% else %}
+                <img
+                  width="100"
+                  src="/static/assets/no_image.jpeg"
+                  class="img-fluid img-thumbnail"
+                  alt="{{detail.product.name}}"
+                />
+                {% endif %}
+                
               </td>
               <td>{{detail.product.name}}</td>
               <td>{{detail.quantity}}</td>

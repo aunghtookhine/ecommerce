@@ -9,7 +9,7 @@ from fastapi import (
     Request,
 )
 from ..db.mongodb import image_collection
-from ..models.auth import get_user
+from ..models.auth import get_user, check_authorization
 from bson import ObjectId
 import os
 import hashlib
@@ -27,6 +27,7 @@ async def upload(
     file: UploadFile = File(...),
     is_category: bool = Form(default=False),
     user=Depends(get_user),
+    check_auth=Depends(check_authorization),
 ):
     try:
         available_content_types = ["image/png", "image/jpeg"]
@@ -67,10 +68,11 @@ async def upload(
 
 @router.get("/")
 def find_images(request: Request, user=Depends(get_user)):
-    q = request.query_params.get("q")
-    cursor = image_collection.find({})
-    if q != None:
-        cursor = image_collection.find({"img_url": {"$regex": q}})
+    type = request.query_params.get("type")
+    if type != None:
+        cursor = image_collection.find({"img_url": {"$regex": type}})
+    else:
+        cursor = image_collection.find({})
     images = []
     for image in cursor:
         image["_id"] = str(image["_id"])
@@ -90,7 +92,9 @@ def find_image(id: str, user=Depends(get_user)):
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def remove_image(id: str, user=Depends(get_user)):
+def remove_image(
+    id: str, user=Depends(get_user), check_auth=Depends(check_authorization)
+):
     try:
         image = image_collection.find_one_and_delete({"_id": ObjectId(id.strip())})
         if not image:

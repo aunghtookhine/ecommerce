@@ -193,6 +193,17 @@ def get_user(request: Request):
     return payload
 
 
+def check_authorization(request: Request):
+    authorization = request.headers.get("Authorization")
+    token_data = authorization.strip().split(" ")
+    payload = decode_token(token_data[1])
+    user = user_collection.find_one({"_id": ObjectId(payload["_id"])})
+    if not user["is_admin"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="You have no access"
+        )
+
+
 def user_dereference(user_dbref):
     user = db.dereference(user_dbref)
     user["_id"] = str(user["_id"])

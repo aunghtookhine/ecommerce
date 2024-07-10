@@ -21,7 +21,7 @@
       </tr>
     </thead>
     <tbody>
-      {% for category in categories %}
+      {% for category in page_categories %}
       <tr>
         <td>{{ category.name }}</td>
         {% if category.parent_category.name %}

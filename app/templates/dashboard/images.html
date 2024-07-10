@@ -120,11 +120,11 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     const urlParams = new URLSearchParams(window.location.search);
-    const myParam = urlParams.get('q');
+    const type = urlParams.get('type');
     const btns = document.querySelectorAll('.btn-check')
-    if(myParam){
+    if(type){
       btns.forEach((btn)=>{
-          if(btn.getAttribute('id').includes(myParam)){
+          if(btn.getAttribute('id').includes(type)){
             btn.setAttribute('checked', true)
           }
       })
@@ -172,7 +172,7 @@
     btns.forEach((btn)=>{
       btn.removeAttribute('checked')
     })
-    window.location.href = type ? `/dashboard/images?q=${type}` : '/dashboard/images'
+    window.location.href = type ? `/dashboard/images?type=${type}` : '/dashboard/images'
   }
 </script>
 {% endblock content %}

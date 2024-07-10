@@ -10,6 +10,7 @@ from ..models.auth import (
     validate_username,
     validate_email,
     EditPassword,
+    check_authorization,
 )
 from ..db.mongodb import user_collection
 from ..models.auth import generate_token, get_user
@@ -17,15 +18,22 @@ from bson import ObjectId
 from fastapi.templating import Jinja2Templates
 from ..db.mongodb import product_collection
 from pymongo import UpdateOne
+import math
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
+PAGE_SIZE = 10
 
 
 @router.get("/users", status_code=status.HTTP_200_OK)
-def find_users(request: Request):
+def find_users(
+    request: Request, user=Depends(get_user), check_auth=Depends(check_authorization)
+):
     q = request.query_params.get("q")
-    cursor = user_collection.find({})
+    page = request.query_params.get("page")
+    if not page:
+        page = 1
+    skip = (int(page) - 1) * PAGE_SIZE
     if q != None:
         cursor = user_collection.find(
             {
@@ -35,16 +43,29 @@ def find_users(request: Request):
                 ]
             }
         )
+        count = user_collection.count_documents(
+            {
+                "$or": [
+                    {"username": {"$regex": q, "$options": "i"}},
+                    {"email": {"$regex": q, "$options": "i"}},
+                ]
+            }
+        )
+    else:
+        cursor = user_collection.find({}).skip(skip).limit(PAGE_SIZE)
+        count = user_collection.count_documents({})
+
+    pages = math.ceil(count / PAGE_SIZE)
     users = []
     for user in cursor:
         user["_id"] = ObjectId(user["_id"])
         del user["password"]
         users.append(user)
-    return users
+    return {"users": users, "pages": pages}
 
 
 @router.get("/users/{id}", status_code=status.HTTP_200_OK)
-def find_user(id: str):
+def find_user(id: str, user=Depends(get_user), check_auth=Depends(check_authorization)):
     user = user_collection.find_one({"_id": ObjectId(id)})
     if not user:
         raise HTTPException(
@@ -129,7 +150,12 @@ def login_user(request: Request, data: Login):
 
 
 @router.patch("/{id}", status_code=status.HTTP_200_OK)
-def edit_password(id: str, data: EditPassword, user=Depends(get_user)):
+def edit_password(
+    id: str,
+    data: EditPassword,
+    user=Depends(get_user),
+    check_auth=Depends(check_authorization),
+):
     try:
         data_dict = data.model_dump()
         if not data_dict["password"] == data_dict["confirm_password"]:

@@ -213,7 +213,7 @@
         </a>
       </li>
       {% for page in range(pages) %}
-        <li class="page-item" id="{{page+1}}"><a class="page-link" href="/dashboard/products?page={{page+1}}">{{page+1}}</a></li>
+        <li class="page-item" id="{{page+1}}"><a class="page-link" type="button" onclick="customPage('products', '{{page + 1}}')">{{page+1}}</a></li>
       {% endfor %}
       <li class="page-item">
         <a class="page-link" type="button" onclick="nextPage('products','{{pages}}')" aria-label="Next">
@@ -225,6 +225,13 @@
 </div>
 
 <script>
+  document.addEventListener("DOMContentLoaded", ()=>{
+    const urlParams = new URLSearchParams(window.location.search);
+    const query = urlParams.get('q');
+    if (query){
+      document.getElementById('searchProduct').value = query
+    }
+  })
   let images = []
 
   const handleImageSelect = (id) => {

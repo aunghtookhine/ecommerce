@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Depends, Form, Request
 from ..models.product import Product, filter_products_by_category
 from ..db.mongodb import product_collection
 from bson import ObjectId, DBRef
-from ..models.auth import get_user
+from ..models.auth import get_user, check_authorization
 from ..models.category import category_dereference
 from ..models.image import image_dereference
 from dotenv import load_dotenv
@@ -16,7 +16,12 @@ PAGE_SIZE = 10
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create_product(request: Request, data: Product, user=Depends(get_user)):
+def create_product(
+    request: Request,
+    data: Product,
+    user=Depends(get_user),
+    check_auth=Depends(check_authorization),
+):
     try:
         product_dict = data.model_dump()
         if product_dict["category"] != "null":
@@ -72,8 +77,12 @@ def find_products(request: Request, user=Depends(get_user)):
             {"name": {"$regex": q, "$options": "i"}}
         )
     else:
-        cursor = product_collection.find({}).skip(skip).limit(PAGE_SIZE)
-        count = product_collection.count_documents({})
+        if str(request.url_for("products_page")) in str(request.url):
+            cursor = product_collection.find({})
+            count = product_collection.count_documents({})
+        else:
+            cursor = product_collection.find({}).skip(skip).limit(PAGE_SIZE)
+            count = product_collection.count_documents({})
 
     pages = math.ceil(count / PAGE_SIZE)
     products = []
@@ -111,7 +120,12 @@ def find_product(id: str, user=Depends(get_user)):
 
 
 @router.put("/{id}", status_code=status.HTTP_200_OK)
-def update_product(id: str, data: Product, user=Depends(get_user)):
+def update_product(
+    id: str,
+    data: Product,
+    user=Depends(get_user),
+    check_auth=Depends(check_authorization),
+):
     try:
         data_dict = data.model_dump()
         data_dict["category"] = DBRef(
@@ -135,7 +149,9 @@ def update_product(id: str, data: Product, user=Depends(get_user)):
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_product(id: str, user=Depends(get_user)):
+def delete_product(
+    id: str, user=Depends(get_user), check_auth=Depends(check_authorization)
+):
     try:
         product = product_collection.find_one_and_delete({"_id": ObjectId(id.strip())})
         if not product:

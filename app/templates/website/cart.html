@@ -1,4 +1,4 @@
-{% extends 'layout/main_base.html' %} {% block content %}
+{% extends 'layout/website_base.html' %} {% block content %}
 
 <div class="container">
   <h1 class="my-5">YOUR CART</h1>
@@ -6,32 +6,48 @@
     <div class="col-6">
       {% if(products == [])%}
       <h2>YOUR BAG IS EMPTY</h2>
-      <p>Once you add something to your bag, it will appear here. Ready to get started?</p>
+      <p>
+        Once you add something to your bag, it will appear here. Ready to get
+        started?
+      </p>
       <a href="/" class="btn btn-dark">Get Started</a>
-      {% endif %}
-      {% for product in products %}
+      {% endif %} {% for product in products %}
       <div
         class="card mb-3 overflow-hidden"
         style="max-width: 540px; max-height: 200px"
       >
         <div class="row g-0">
           <div class="col-md-4">
+            {% if product.images|length %}
             <img
               src="{{product.images[0].img_url}}"
               class="img-fluid rounded-start"
               alt="..."
             />
+            {% else %}
+            <img
+              src="/static/assets/no_image.jpeg"
+              class="img-fluid rounded-start"
+              alt="..."
+            />
+            {% endif %}
           </div>
           <div class="col-md-8">
             <div class="card-body">
               <h5 class="card-title">{{product.name}}</h5>
               <p class="card-text">{{product.price}} Ks</p>
               <p class="d-flex align-items-center">
-                <button class="btn btn-light" onclick="handleQtyDecrease('{{product._id}}', '{{token}}')">
+                <button
+                  class="btn btn-light"
+                  onclick="handleQtyDecrease('{{product._id}}', '{{token}}')"
+                >
                   <i class="bi bi-dash-circle"></i>
                 </button>
                 <span class="mx-3">{{product.qty}}</span>
-                <button class="btn btn-light" onclick="handleQtyIncrease('{{product._id}}', '{{token}}')">
+                <button
+                  class="btn btn-light"
+                  onclick="handleQtyIncrease('{{product._id}}', '{{token}}')"
+                >
                   <i class="bi bi-plus-circle"></i>
                 </button>
               </p>
@@ -43,44 +59,57 @@
     </div>
     {% if(products != [])%}
     <div class="col-6">
-        <h2>ORDER SUMMARY</h2>
-        <hr>
-          {% for product in products %}
-          <div class="d-flex justify-content-between" style="font-size: 20px;">
-            <p>{{product.name}} x {{product.qty}}</p>
-            <p>{{product.price * product.qty}} Ks</p>
-          </div>
-          {% endfor %}
-        <hr>
-        <div class="d-flex justify-content-between" style="font-size: 20px;">
-            <p>Total</p>
-            <p>{{total}} Ks</p>
-        </div>
-      <button class="btn btn-lg btn-dark w-100" onclick="handleCheckoutBtn('{{token}}')">Checkout</button>
+      <h2>ORDER SUMMARY</h2>
+      <hr />
+      {% for product in products %}
+      <div class="d-flex justify-content-between" style="font-size: 20px">
+        <p>{{product.name}} x {{product.qty}}</p>
+        <p>{{product.price * product.qty}} Ks</p>
+      </div>
+      {% endfor %}
+      <hr />
+      <div class="d-flex justify-content-between" style="font-size: 20px">
+        <p>Total</p>
+        <p>{{total}} Ks</p>
+      </div>
+      <button
+        class="btn btn-lg btn-dark w-100"
+        onclick="handleCheckoutBtn('{{token}}')"
+      >
+        Checkout
+      </button>
     </div>
     {% endif %}
   </div>
 </div>
 
 <script>
-    const handleQtyIncrease = async (product_id, token) => {
-      payload = {
-        product_id
-      }
-      const {detail, success} = await postMethod('/api/cart/increase', payload, token)
-      showToast(detail, success)
-    }
-    const handleQtyDecrease = async (product_id, token) => {
-      payload = {
-        product_id
-      }
-      const {detail, success} = await postMethod('/api/cart/decrease', payload, token)
-      showToast(detail,success)
-    }
-    const handleCheckoutBtn = async (token) => {
-      const {detail, success} = await postMethod('/api/checkouts', null, token)
-      showToast(detail, success, '/checkouts')
-    }
+  const handleQtyIncrease = async (product_id, token) => {
+    payload = {
+      product_id,
+    };
+    const { detail, success } = await postMethod(
+      "/api/cart/increase",
+      payload,
+      token
+    );
+    showToast(detail, success);
+  };
+  const handleQtyDecrease = async (product_id, token) => {
+    payload = {
+      product_id,
+    };
+    const { detail, success } = await postMethod(
+      "/api/cart/decrease",
+      payload,
+      token
+    );
+    showToast(detail, success);
+  };
+  const handleCheckoutBtn = async (token) => {
+    const { detail, success } = await postMethod("/api/checkouts", null, token);
+    showToast(detail, success, "/checkouts");
+  };
 </script>
 
 {% endblock %}

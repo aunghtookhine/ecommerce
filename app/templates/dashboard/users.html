@@ -99,6 +99,23 @@
       </form>
     </div>
   </div>
+  <nav aria-label="Page navigation example" class="float-end">
+    <ul class="pagination">
+      <li class="page-item">
+        <a class="page-link" type="button" onclick="previousPage('users', '{{pages}}')" aria-label="Previous">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+      {% for page in range(pages) %}
+        <li class="page-item" id="{{page+1}}"><a class="page-link" type="button" onclick="customPage('users', '{{page + 1}}')">{{page+1}}</a></li>
+      {% endfor %}
+      <li class="page-item">
+        <a class="page-link" type="button" onclick="nextPage('users','{{pages}}')" aria-label="Next">
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
 </div>
 <script>
   document.addEventListener("DOMContentLoaded", ()=>{

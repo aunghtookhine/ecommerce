@@ -34,8 +34,8 @@
         </a>
       </li>
       {% for page in range(pages) %}
-      <li class="page-item" id="{{page+1}}"><a class="page-link"
-          href="/dashboard/checkouts?page={{page+1}}">{{page+1}}</a></li>
+      <li class="page-item" id="{{page+1}}"><a class="page-link" type="button"
+        onclick="customPage('checkouts', '{{page + 1}}')">{{page+1}}</a></li>
       {% endfor %}
       <li class="page-item">
         <a class="page-link" type="button" onclick="nextPage('checkouts','{{pages}}')" aria-label="Next">

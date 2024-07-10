@@ -18,18 +18,9 @@ class Category(BaseModel):
         if not value:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Fields cannot be empty",
+                detail="Fields cannot be empty.",
             )
         return value
-
-    @classmethod
-    def to_form_data(
-        cls,
-        name: str = Form(...),
-        parent_category: str = Form(...),
-        image: str = Form(...),
-    ):
-        return cls(name=name, parent_category=parent_category, image=image)
 
 
 def category_dereference(category_dbref):

@@ -47,10 +47,11 @@
     const urlParams = new URLSearchParams(window.location.search);
     const page = urlParams.get("page");
     if(!page){
-      document.getElementById("1").classList.add('active')
+      pageOne = document.getElementById("1")
+      if(pageOne) pageOne.classList.add('active')
     }else{
-      const activeList = document.getElementById(page)
-      activeList.classList.add('active')
+      const activePage = document.getElementById(page)
+      activePage.classList.add('active')
     }
     
   })
