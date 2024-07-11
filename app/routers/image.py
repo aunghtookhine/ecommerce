@@ -22,14 +22,18 @@ load_dotenv(override=True)
 
 @router.post("/")
 async def upload(
-    request: Request,
-    name: str = Form(...),
+    name: str = Form(default=""),
     file: UploadFile = File(...),
     is_category: bool = Form(default=False),
     user=Depends(get_user),
     check_auth=Depends(check_authorization),
 ):
     try:
+        if not name:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Fields cannot be empty.",
+            )
         available_content_types = ["image/png", "image/jpeg"]
         content_type = file.headers.get("content-type")
         if not content_type in available_content_types:

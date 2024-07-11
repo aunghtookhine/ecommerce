@@ -48,8 +48,8 @@
 </div>
 <script>
     const handleEditUser = async (id, token) => {
-        const form = document.getElementById('editUserForm')
-        const formData = new FormData(form)
+        const form = $('#editUserForm')
+        const formData = new FormData(form[0])
         const formDataObj = Object.fromEntries(formData)
         const {detail, success} = await patchMethod(`/api/auth/${id}`, formDataObj, token)
         showToast(detail, success, '/dashboard/users')

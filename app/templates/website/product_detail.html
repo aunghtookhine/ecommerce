@@ -59,10 +59,9 @@
   </div>
 </div>
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const firstItem = document.querySelectorAll(".carousel-item")[0];
-    firstItem.classList.add("active");
-  });
+  $(document).ready(() => {
+    $('.carousel-item').first().addClass('active')
+  })
   const handleAddToCart = async (product_id, token = null) => {
     if (!token) {
       Swal.fire({

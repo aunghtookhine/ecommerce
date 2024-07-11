@@ -38,7 +38,7 @@
         <td>{{ product.category.name}}</td>
         <td>{{ product.item}}</td>
         <td>{{ product.feature_product}}</td>
-        <td>{{ product.price}}</td>
+        <td>{{ product.price}} Ks</td>
         <td>
           <a
             href="/dashboard/products/{{product._id}}"
@@ -225,22 +225,23 @@
 </div>
 
 <script>
-  document.addEventListener("DOMContentLoaded", ()=>{
+  $(document).ready(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const query = urlParams.get('q');
     if (query){
-      document.getElementById('searchProduct').value = query
+      $('#searchProduct').val(query)
     }
   })
+
   let images = []
 
   const handleImageSelect = (id) => {
-    const selectedImage = document.getElementById(id)
+    const selectedImage = $("#" + id)
     if(images.includes(id)){
-      selectedImage.classList.remove('selected')
+      selectedImage.removeClass('selected')
       images = images.filter(img => img != id)
     }else{
-      selectedImage.classList.add('selected')
+      selectedImage.addClass('selected')
       images.push(id)
     }
   }
@@ -266,8 +267,8 @@
     });
   };
   const handleCreateProduct = async (token) => {
-    const form = document.getElementById("createProductForm");
-    const formData = new FormData(form);
+    const form = $("#createProductForm");
+    const formData = new FormData(form[0]);
     const formDataObj = Object.fromEntries(formData);
     if(images.length) formDataObj.images = images
     const { detail, success } = await postMethod(

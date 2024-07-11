@@ -118,16 +118,16 @@
   </nav>
 </div>
 <script>
-  document.addEventListener("DOMContentLoaded", ()=>{
+  $(document).ready(()=>{
     const urlParams = new URLSearchParams(window.location.search);
     const query = urlParams.get('q');
     if (query){
-      document.getElementById('searchUsername').value = query
+      $('#searchUsername').val(query)
     }
   })
   const handleCreateUser = async (token) => {
-    const form = document.getElementById('createUserForm')
-    const formData = new FormData(form)
+    const form = $('#createUserForm')
+    const formData = new FormData(form[0])
     const formDataObj = Object.fromEntries(formData)
     if (formDataObj.is_admin) formDataObj.is_admin = true
     const response = await fetch('/api/auth/register', {

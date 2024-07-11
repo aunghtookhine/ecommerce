@@ -155,14 +155,14 @@
   let image = ''
 
   const handleImageSelect = (id) => {
-    const selectedImg = document.querySelector('img.selected')
-    if (selectedImg) selectedImg.classList.remove('selected')
-    document.getElementById(id).classList.add('selected')
+    const selectedImg = $('img.selected')
+    if (selectedImg) selectedImg.removeClass('selected')
+    $('#'+ id).addClass('selected')
     image = id
   }
   const handleCreateCategory = async (token) => {
-    const form = document.getElementById("createCategoryForm");
-    const formData = new FormData(form);
+    const form = $("#createCategoryForm");
+    const formData = new FormData(form[0]);
     const formDataObj = Object.fromEntries(formData);
     if(image) formDataObj.image = image
     const { detail, success } = await postMethod(

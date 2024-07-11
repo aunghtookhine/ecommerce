@@ -139,24 +139,26 @@
 <script>
   let images = []
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const selectedImgs = document.querySelectorAll('img.selected')
-    if (selectedImgs.length) images.push(selectedImg.id)
+  $(document).ready(()=>{
+    const selectedImgs = $('img.selected')
+    selectedImgs.each((index, element) => {
+      images.push($(element).attr('id'))
+    });
   })
 
   const handleImageSelect = (id) => {
-    const selectedImage = document.getElementById(id)
+    const selectedImage = $('#'+ id)
     if(images.includes(id)){
-      selectedImage.classList.remove('selected')
+      selectedImage.removeClass('selected')
       images = images.filter(img => img != id)
     }else{
-      selectedImage.classList.add('selected')
+      selectedImage.addClass('selected')
       images.push(id)
     }
   }
   const handleUpdateProduct = async (id, token) => {
-    const form = document.getElementById('updateProductForm')
-    const formData = new FormData(form)
+    const form = $('#updateProductForm')
+    const formData = new FormData(form[0])
     const formDataObj = Object.fromEntries(formData)
     if(images.length) formDataObj.images = images
     const {detail, success} = await putMethod(`/api/products/${id}`,formDataObj, token);

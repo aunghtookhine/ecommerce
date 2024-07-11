@@ -1,17 +1,4 @@
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const path = window.location.pathname
-    const cartBtn = document.getElementById('cart')
-    if (cartBtn.getAttribute("href") === path) {
-      cartBtn.classList.add('d-none')
-    } else {
-      cartBtn.classList.remove('d-none')
-    }
-  })
-
-</script>
-
-<nav class="navbar navbar-success bg-light vh-10 p-3">
+<nav class="navbar navbar-success bg-light vh-10 p-3 shadow-sm">
   <div class="container">
     <a class="navbar-brand" href="/">Cartopia</a>
     <div class="d-flex align-items-center">
@@ -50,6 +37,15 @@
   </div>
 </nav>
 <script>
+  $(document).ready(() => {
+    const path = window.location.pathname
+    const cartBtn = $('#cart')
+    if (cartBtn.attr('href') === path) {
+      cartBtn.addClass('d-none')
+    } else {
+      cartBtn.removeClass('d-none')
+    }
+  })
   const handleLogout = async (token) => {
     const response = await fetch('/api/auth/logout', {
       method: "POST",

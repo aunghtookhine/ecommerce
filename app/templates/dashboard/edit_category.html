@@ -45,21 +45,22 @@
 </div>
 <script>
   let image = ''
-  document.addEventListener('DOMContentLoaded', () => {
-    const selectedImg = document.querySelector('img.selected')
-    if (selectedImg) image = selectedImg.id
+
+  $(document).ready(() => {
+    const selectImg = $('img.select')
+    if(selectImg.length) image = selectImg.attr('id')
   })
 
   const handleImageSelect = (id) => {
-    const selectedImg = document.querySelector('img.selected')
-    if (selectedImg) selectedImg.classList.remove('selected')
-    document.getElementById(id).classList.add('selected')
+    const selectedImg = $('img.selected')
+    if (selectedImg) selectedImg.removeClass('selected')
+    $('#' + id).addClass('selected')
     image = id
   }
 
   const handleUpdateCategory = async (id, token) => {
-    const form = document.getElementById("updateCategoryForm");
-    const formData = new FormData(form);
+    const form = $("#updateCategoryForm");
+    const formData = new FormData(form[0]);
     const formDataObj = Object.fromEntries(formData);
     if(image) formDataObj.image = image
     const { detail, success } = await putMethod(

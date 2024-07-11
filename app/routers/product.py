@@ -72,7 +72,11 @@ def find_products(request: Request, user=Depends(get_user)):
         page = 1
     skip = (int(page) - 1) * PAGE_SIZE
     if q != None:
-        cursor = product_collection.find({"name": {"$regex": q, "$options": "i"}})
+        cursor = (
+            product_collection.find({"name": {"$regex": q, "$options": "i"}})
+            .skip(skip)
+            .limit(PAGE_SIZE)
+        )
         count = product_collection.count_documents(
             {"name": {"$regex": q, "$options": "i"}}
         )

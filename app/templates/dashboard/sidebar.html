@@ -39,12 +39,12 @@
   }
 </style>
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
+  $(document).ready(()=>{
     const path = window.location.pathname
-    const navLinks = document.querySelectorAll('.nav-link')
-    navLinks.forEach((navLink) => {
-      if (path.includes(navLink.getAttribute('href'))) {
-        navLink.classList.add('active')
+    const navLinks = $(".nav-link")
+    navLinks.each((index, element) => {
+      if(path.includes($(element).attr('href'))){
+        $(element).addClass('active')
       }
     })
   })

@@ -30,8 +30,8 @@
 </div>
 <script>
   const handleLogin = async () => {
-    const form = document.getElementById('loginForm')
-    const formData = new FormData(form)
+    const form = $('#loginForm')
+    const formData = new FormData(form[0])
     const formDataObj = Object.fromEntries(formData)
     const response = await fetch('/api/auth/login', {
       method: "POST",

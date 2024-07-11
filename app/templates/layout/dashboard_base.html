@@ -10,6 +10,7 @@
   <script src="/static/js/api_requests.js"></script>
   <script src="/static/js/dashboard.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
   <title>Cartopia</title>
 </head>
 <style>
@@ -43,17 +44,16 @@
     </div>
   </div>
   <script>
-    document.addEventListener("DOMContentLoaded", ()=>{
+  $(document).ready(()=>{
     const urlParams = new URLSearchParams(window.location.search);
     const page = urlParams.get("page");
     if(!page){
-      pageOne = document.getElementById("1")
-      if(pageOne) pageOne.classList.add('active')
+      const pageOne = $("#1")
+      if(pageOne.length) pageOne.addClass('active')
     }else{
-      const activePage = document.getElementById(page)
-      activePage.classList.add('active')
+      const activePage = $('#' + page)
+      activePage.addClass('active')
     }
-    
   })
   </script>
 </body>

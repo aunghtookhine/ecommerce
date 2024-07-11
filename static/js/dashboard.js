@@ -1,6 +1,6 @@
 const handleSearch = (searchBoxId, path) => {
-  const searchBox = document.getElementById(searchBoxId);
-  window.location.href = `/dashboard/${path}?q=${searchBox.value}`;
+  const searchBox = $("#" + searchBoxId);
+  window.location.href = `/dashboard/${path}?q=${searchBox.val()}`;
 };
 const handleSearchBoxClear = (path) => {
   window.location.href = `/dashboard/${path}`;

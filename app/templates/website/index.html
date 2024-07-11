@@ -3,14 +3,14 @@
 <div class="container-fluid d-flex justify-content-center align-items-center bg-secondary-subtle"
   style="height: 300px;">
   <div class="d-flex justify-content-center align-items-center flex-column">
-    <p class="display-4">
+    <p class="display-4 text-center">
       Discover Your Style Haven
     </p>
     <a href="/products" class="btn btn-dark">Browse All</a>
   </div>
 </div>
-<div class="container">
-  <p class="display-6 my-4">Feature Products</p>
+<div class="container py-4">
+  <p class="display-6 mb-4">Feature Products</p>
   <div class="d-flex justify-content-start flex-wrap">
     {% for product in feature_products %}
     <a href="/products/{{product._id}}" class="text-decoration-none">
@@ -34,7 +34,7 @@
 <div class="container-fluid bg-secondary-subtle">
   <div class="container py-5">
     <p class="display-6 mb-5 text-center fw-bold">Shop by Category</p>
-    <div class="d-flex justify-content-around">
+    <div class="d-flex justify-content-around flex-wrap">
       {% for category in parent_categories %}
       <div>
         <a href="/products?category={{category._id}}" class="text-decoration-none text-dark">
@@ -46,8 +46,8 @@
     </div>
   </div>
 </div>
-<div class="container-fluid bg-dark text-white d-flex flex-column justify-content-center align-items-center"
-  style="height: 200px;">
+<div class="container-fluid bg-dark text-white d-flex flex-column justify-content-center align-items-center p-5"
+  style="height: fit-content;">
   <h3>Cartopia</h3>
   <p class="text-center w-75">Welcome to Cartopia, your ultimate fashion destination. We offer a curated selection of
     the
@@ -118,8 +118,8 @@
 
 <script>
   const handleChangePassword = async (token) => {
-    const form = document.getElementById("changePasswordForm");
-    const formData = new FormData(form);
+    const form = $("#changePasswordForm");
+    const formData = new FormData(form[0]);
     const formDataObj = Object.fromEntries(formData);
     const { detail, success } = await patchMethod(
       "/api/auth/change-password",

@@ -41,8 +41,8 @@
 </div>
 <script>
   const handleRegister = async () => {
-    const form = document.getElementById('registerForm')
-    const formData = new FormData(form)
+    const form = $('#registerForm')
+    const formData = new FormData(form[0])
     const formDataObj = Object.fromEntries(formData)
     const response = await fetch('/api/auth/register', {
       method: "POST",

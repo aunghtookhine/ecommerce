@@ -13,6 +13,7 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
       rel="stylesheet"
     />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
   </head>
   <body>
     <div class="container">
@@ -67,11 +68,9 @@
     </div>
   </body>
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        window.print()
-        window.onafterprint = () => {
-            history.back()
-        }
+    $(document).ready(function() {
+      window.print();
+      window.history.back()
     });
   </script>
 </html>

@@ -35,13 +35,17 @@ def find_users(
         page = 1
     skip = (int(page) - 1) * PAGE_SIZE
     if q != None:
-        cursor = user_collection.find(
-            {
-                "$or": [
-                    {"username": {"$regex": q, "$options": "i"}},
-                    {"email": {"$regex": q, "$options": "i"}},
-                ]
-            }
+        cursor = (
+            user_collection.find(
+                {
+                    "$or": [
+                        {"username": {"$regex": q, "$options": "i"}},
+                        {"email": {"$regex": q, "$options": "i"}},
+                    ]
+                }
+            )
+            .skip(skip)
+            .limit(PAGE_SIZE)
         )
         count = user_collection.count_documents(
             {
@@ -149,32 +153,6 @@ def login_user(request: Request, data: Login):
         return {"detail": e.detail, "success": False}
 
 
-@router.patch("/{id}", status_code=status.HTTP_200_OK)
-def edit_password(
-    id: str,
-    data: EditPassword,
-    user=Depends(get_user),
-    check_auth=Depends(check_authorization),
-):
-    try:
-        data_dict = data.model_dump()
-        if not data_dict["password"] == data_dict["confirm_password"]:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Password and Confirm Password must be same.",
-            )
-        validate_password(data_dict["password"])
-        new_password = get_hashed_password(data_dict["password"])
-        user = user_collection.update_one(
-            {"_id": ObjectId(id)},
-            {"$set": {"password": new_password}},
-        )
-        if user.acknowledged:
-            return {"detail": "Successfully Changed Password.", "success": True}
-    except HTTPException as e:
-        return {"detail": e.detail, "success": False}
-
-
 @router.patch("/change-password", status_code=status.HTTP_200_OK)
 def change_password(data: ChangePassword, user=Depends(get_user)):
     try:
@@ -204,6 +182,38 @@ def change_password(data: ChangePassword, user=Depends(get_user)):
         new_password = get_hashed_password(data_dict["new_password"])
         user = user_collection.update_one(
             {"_id": user["_id"]}, {"$set": {"password": new_password}}
+        )
+        if user.acknowledged:
+            return {"detail": "Successfully Changed Password.", "success": True}
+    except HTTPException as e:
+        return {"detail": e.detail, "success": False}
+
+
+@router.patch("/{id}", status_code=status.HTTP_200_OK)
+def edit_password(
+    id: str,
+    data: EditPassword,
+    user=Depends(get_user),
+    check_auth=Depends(check_authorization),
+):
+    try:
+        data_dict = data.model_dump()
+        if not data_dict["password"] == data_dict["confirm_password"]:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Password and Confirm Password must be same.",
+            )
+        user = user_collection.find_one({"_id": ObjectId(user["_id"])})
+        if check_password(user["password"], data_dict["password"]):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Please provide new password.",
+            )
+        validate_password(data_dict["password"])
+        new_password = get_hashed_password(data_dict["password"])
+        user = user_collection.update_one(
+            {"_id": ObjectId(id)},
+            {"$set": {"password": new_password}},
         )
         if user.acknowledged:
             return {"detail": "Successfully Changed Password.", "success": True}

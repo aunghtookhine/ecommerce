@@ -117,26 +117,24 @@
   </div>
 </div>
 <script>
-
-  document.addEventListener("DOMContentLoaded", () => {
+  $(document).ready(()=>{
     const urlParams = new URLSearchParams(window.location.search);
     const type = urlParams.get('type');
-    const btns = document.querySelectorAll('.btn-check')
+    const btns = $('.btn-check')
     if(type){
-      btns.forEach((btn)=>{
-          if(btn.getAttribute('id').includes(type)){
-            btn.setAttribute('checked', true)
-          }
+      btns.each((index, element) => {
+        if($(element).attr('id').includes(type)){
+          $(element).attr('checked', true)
+        }
       })
     }else{
-      document.getElementById('allImages').setAttribute('checked', true)
+      $('#allImages').attr('checked', true)
     }
   })
 
   const handleCreateImage = async (token) => {
-    const form = document.getElementById("createImageForm");
-    const formData = new FormData(form);
-
+    const form = $("#createImageForm");
+    const formData = new FormData(form[0]);
     const response = await fetch("/api/images", {
       method: "POST",
       headers: {
@@ -168,9 +166,9 @@
   };
 
   const handleFilterImages = (type=null) => {
-    const btns = document.querySelectorAll('.btn-check')
-    btns.forEach((btn)=>{
-      btn.removeAttribute('checked')
+    const btns = $('.btn-check')
+    btns.each((index, element)=>{
+      $(element).attr('checked', false)
     })
     window.location.href = type ? `/dashboard/images?type=${type}` : '/dashboard/images'
   }

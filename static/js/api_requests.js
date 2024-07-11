@@ -52,16 +52,16 @@ const deleteMethod = async (resource, token) => {
 };
 
 const showToast = (detail, success, url = null) => {
-  const toast = document.getElementById("toast");
-  const toastBody = document.getElementById("toast-body");
-  toastBody.innerHTML = detail;
+  const toast = $("#toast");
+  const toastBody = $("#toast-body");
+  toastBody.html(detail);
   if (success) {
-    toast.classList.add("text-bg-success", "show");
+    toast.addClass(["text-bg-success", "show"]);
     !url ? window.location.reload() : (window.location.href = url);
   } else {
-    toast.classList.add("text-bg-danger", "show");
+    toast.addClass(["text-bg-danger", "show"]);
     setTimeout(() => {
-      toast.classList.remove("show", "text-bg-danger");
+      toast.removeClass(["show", "text-bg-danger"]);
     }, 3000);
   }
 };
