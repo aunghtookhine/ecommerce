@@ -120,6 +120,7 @@ def register_user(request: Request, data: Register):
                 request.session["token"] = token
             return {"detail": "Successfully Registered.", "success": True}
     except HTTPException as e:
+        print(e)
         return {"detail": e.detail, "success": False}
 
 

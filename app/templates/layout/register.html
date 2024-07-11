@@ -1,38 +1,28 @@
 {% extends 'layout/auth_base.html' %} {% block content %}
 
-<div class="container d-flex justify-content-center align-items-center vh-100">
-  <div class="w-50 mx-auto p-5 shadow-lg">
-    <h1 class="page-header text-center mb-5">Cartopia</h1>
-    <form id="registerForm">
-      <div class="mb-3">
-        <label for="username" class="form-label fw-bold">Username</label>
-        <input type="username" class="form-control" id="username" name="username" />
+<div class="row mt-5">
+  <div class="col-sm-12 col-md-8 col-lg-6 col-xl-4 mx-auto p-5">
+    <p class="display-2 text-center fw-bold">Sign Up</p>
+    <p class="fs-5 text-center">Already have an account? <a href="/login">Log in</a></p>
+    <form id="registerForm" class="mt-5">
+      <div class="mb-3 form-floating">
+        <input type="text" class="form-control" id="floatingUsername" name="username"  placeholder="Your Username"/>
+        <label for="floatingUsername">Username</label>
       </div>
-      <div class="mb-3">
-        <label for="email" class="form-label fw-bold">Email address</label>
-        <input type="email" class="form-control" id="email" name="email" />
+      <div class="mb-3 form-floating">
+        <input type="email" class="form-control" id="floatingEmail" name="email" placeholder="Your Email" />
+        <label for="floatingEmail">Email address</label>
       </div>
-      <div class="mb-3">
-        <label for="password" class="form-label fw-bold">Password</label>
-        <input type="password" class="form-control" id="password" name="password"/>
+      <div class="mb-3 form-floating">
+        <input type="password" class="form-control" id="floatingPassword" name="password" placeholder="Your Password"/>
+        <label for="floatingPassword">Password</label>
       </div>
-      <div class="mb-3">
-        <label for="confirmPassword" class="form-label fw-bold"
-          >Confirm Password</label
-        >
-        <input
-          type="password"
-          class="form-control"
-          id="confirmPassword"
-          name="confirm_password"
-        />
+      <div class="mb-3 form-floating">
+        <input type="password" class="form-control" id="floatingConfirmPassword" name="confirm_password" placeholder="Your Confirm Password"/>
+        <label for="floatingConfirmPassword">Confirm Password</label>
       </div>
-      <div class="mb-3 d-flex justify-content-between align-items-center">
-        <p>
-          Already have an account?
-          <a href="/login">Log in</a>
-        </p>
-        <a onclick="handleRegister()" class="btn btn-dark w-25 fw-bold">
+      <div class="mb-3 d-flex justify-content-end align-items-center">
+        <a class="btn btn-outline-primary w-25" onclick="handleRegister()">
           Register
         </a>
       </div>

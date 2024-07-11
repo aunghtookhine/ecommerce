@@ -1,33 +1,27 @@
 {% extends 'layout/auth_base.html' %}
 {% block content %}
-
-<div class="container d-flex justify-content-center align-items-center vh-100">
-  <div class="w-50 mx-auto p-5 shadow-lg">
-    <h1 class="page-header text-center mb-5">Cartopia</h1>
-    <form id="loginForm">
-      <div class="mb-3">
-        <label for="email" class="form-label fw-bold">Email address</label>
-        <input type="email" class="form-control" id="email" name="email" />
-        <div id="email-error" class="invalid-feedback"></div>
+<div class="row mt-5">
+  <div class="col-sm-12 col-md-8 col-lg-6 col-xl-4 mx-auto p-5">
+    <p class="display-2 text-center fw-bold">Log In</p>
+    <p class="fs-5 text-center">Don't have an account? <a href="/register">Sign up</a></p>
+    <form id="loginForm" class="mt-5">
+      <div class="mb-3 form-floating">
+        <input type="email" class="form-control" id="floatingEmail" placeholder="Your Email Address" name="email" />
+        <label for="floatingEmail">Email address</label>
       </div>
-      <div class="mb-3">
-        <label for="password" class="form-label fw-bold">Password</label>
-        <input type="password" class="form-control" id="password" name="password" />
-        <div id="password-error" class="invalid-feedback"></div>
+      <div class="mb-3 form-floating">
+        <input type="password" class="form-control" id="floatingPassword" placeholder="Your Password" name="password" />
+        <label for="floatingPassword">Password</label>
       </div>
       <div class="mb-3 d-flex justify-content-end align-items-center">
-        <a class="btn btn-dark w-25 fw-bold" onclick="handleLogin()">
+        <a class="btn btn-outline-primary w-25" onclick="handleLogin()">
           Login
         </a>
       </div>
     </form>
-    <p class="text-center fw-bold">Don't you have an account</p>
-    <div class="d-flex justify-content-center">
-      <a href="/register" class="btn btn-outline-dark fw-bold">Sign up to Cartopia</a>
-    </div>
   </div>
 </div>
-</div>
+
 <script>
   const handleLogin = async () => {
     const form = $('#loginForm')
