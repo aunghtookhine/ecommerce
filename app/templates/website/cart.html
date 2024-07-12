@@ -1,9 +1,9 @@
 {% extends 'layout/website_base.html' %} {% block content %}
 
-<div class="container">
-  <h1 class="my-5">YOUR CART</h1>
+<div class="container my-3">
+  <h1 class="my-3 my-md-5">YOUR CART</h1>
   <div class="row">
-    <div class="col-6">
+    <div class="col-12 col-md-6">
       {% if(products == [])%}
       <h2>YOUR BAG IS EMPTY</h2>
       <p>
@@ -14,10 +14,10 @@
       {% endif %} {% for product in products %}
       <div
         class="card mb-3 overflow-hidden"
-        style="max-width: 540px; max-height: 200px"
+        style="max-width: 540px; max-height: fit-content"
       >
         <div class="row g-0">
-          <div class="col-md-4">
+          <div class="col-4">
             {% if product.images|length %}
             <img
               src="{{product.images[0].img_url}}"
@@ -32,9 +32,9 @@
             />
             {% endif %}
           </div>
-          <div class="col-md-8">
+          <div class="col-8">
             <div class="card-body">
-              <h5 class="card-title">{{product.name}}</h5>
+              <h5 class="card-title text-truncate">{{product.name}}</h5>
               <p class="card-text">{{product.price}} Ks</p>
               <p class="d-flex align-items-center">
                 <button
@@ -58,7 +58,7 @@
       {% endfor %}
     </div>
     {% if(products != [])%}
-    <div class="col-6">
+    <div class="col-12 col-md-6 p-4 py-md-0 px-mb-3">
       <h2>ORDER SUMMARY</h2>
       <hr />
       {% for product in products %}

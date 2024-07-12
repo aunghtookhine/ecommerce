@@ -48,6 +48,10 @@ def products_page(request: Request):
     total_qty = 0
     for qty in cart_items.values():
         total_qty += qty
+    token = request.session.get("token")
+    payload = {}
+    if token:
+        payload = decode_token(token)
     return templates.TemplateResponse(
         "website/products.html",
         {
@@ -55,6 +59,8 @@ def products_page(request: Request):
             "products": products,
             "total_qty": total_qty,
             "categories": categories,
+            "token": token,
+            "username": payload["username"],
         },
     )
 

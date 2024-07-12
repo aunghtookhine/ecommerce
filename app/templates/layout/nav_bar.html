@@ -8,6 +8,9 @@
           {{total_qty}}
         </span>
       </a>
+      <a type="button" id="offcanvasBtn" class="btn btn-light me-3 d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCategories" aria-controls="offcanvasCategories">
+        <i class="bi bi-list"></i>
+      </a>
       {% if token %}
       <div class="dropdown">
         <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
@@ -15,7 +18,7 @@
           <strong>{{username}}</strong>
         </a>
 
-        <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownSidebar">
+        <ul class="dropdown-menu text-small shadow dropdown-menu-end dropdown-menu-xl-start" aria-labelledby="dropdownSidebar">
           <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
               Change Password
             </button></li>
@@ -44,6 +47,10 @@
       cartBtn.addClass('d-none')
     } else {
       cartBtn.removeClass('d-none')
+    }
+    const offcanvasBtn = $('#offcanvasBtn')
+    if(path !== '/products'){
+      offcanvasBtn.addClass('d-none')
     }
   })
   const handleLogout = async (token) => {

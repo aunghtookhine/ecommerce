@@ -2,7 +2,7 @@
 
 <div class="container mt-5">
   <div class="row">
-    <div class="col-2">
+    <div class="col-lg-2 d-none d-lg-block">
       <div class="d-flex flex-column">
         <h4>Categories</h4>
         <hr />
@@ -22,8 +22,8 @@
         {% endfor %}
       </div>
     </div>
-    <div class="col-10">
-      <div class="d-flex justify-content-start flex-wrap">
+    <div class="col-12 col-lg-10">
+      <div class="d-flex justify-content-center justify-content-md-start flex-wrap">
         {% for product in products %}
         <a href="/products/{{product._id}}" class="text-decoration-none">
           <div class="card mb-3 me-3" style="width: 12rem; height: auto">
@@ -50,6 +50,30 @@
         {% endfor %}
       </div>
     </div>
+  </div>
+</div>
+
+<div class="offcanvas offcanvas-start p-3" tabindex="-1" id="offcanvasCategories" aria-labelledby="offcanvasCategoriesLabel" style="width: 300px;">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasCategoriesLabel">Categories</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <hr>
+  <div class="offcanvas-body">
+    <p class="fw-bold">
+      <a href="/products" class="text-decoration-none text-dark"
+        >All Categories</a
+      >
+    </p>
+    {% for category in categories %}
+    <p class="fw-bold" data-bs-dismiss="offcanvas">
+      <a
+        href="/products?category={{category._id}}"
+        class="text-decoration-none text-dark"
+        >{{category.name}}</a
+      >
+    </p>
+    {% endfor %}
   </div>
 </div>
 
