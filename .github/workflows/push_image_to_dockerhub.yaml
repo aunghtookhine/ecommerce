@@ -15,7 +15,7 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     - name: Build and Push Docker Image
-        uses: docker/build-push-action@v4
-        with:
-          push: true
-          tags: aunghtookhine/ecommerce:v1
+      uses: docker/build-push-action@v4
+      with:
+        push: true
+        tags: aunghtookhine/ecommerce:v1
