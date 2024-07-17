@@ -1,0 +1,1172 @@
+components:
+  schemas:
+    AdjustQty:
+      properties:
+        product_id:
+          title: Product Id
+          type: string
+      required:
+      - product_id
+      title: AdjustQty
+      type: object
+    Body_upload_api_images__post:
+      properties:
+        file:
+          format: binary
+          title: File
+          type: string
+        is_category:
+          default: false
+          title: Is Category
+          type: boolean
+        name:
+          default: ''
+          title: Name
+          type: string
+      required:
+      - file
+      title: Body_upload_api_images__post
+      type: object
+    Cart:
+      properties:
+        product_id:
+          title: Product Id
+          type: string
+        qty:
+          title: Qty
+          type: integer
+      required:
+      - product_id
+      - qty
+      title: Cart
+      type: object
+    Category:
+      properties:
+        image:
+          title: Image
+          type: string
+        name:
+          title: Name
+          type: string
+        parent_category:
+          title: Parent Category
+          type: string
+      required:
+      - name
+      title: Category
+      type: object
+    ChangePassword:
+      properties:
+        confirm_password:
+          title: Confirm Password
+          type: string
+        email:
+          title: Email
+          type: string
+        new_password:
+          title: New Password
+          type: string
+        old_password:
+          title: Old Password
+          type: string
+      required:
+      - email
+      - old_password
+      - new_password
+      - confirm_password
+      title: ChangePassword
+      type: object
+    EditPassword:
+      properties:
+        confirm_password:
+          title: Confirm Password
+          type: string
+        password:
+          title: Password
+          type: string
+      required:
+      - password
+      - confirm_password
+      title: EditPassword
+      type: object
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          title: Detail
+          type: array
+      title: HTTPValidationError
+      type: object
+    Login:
+      properties:
+        email:
+          title: Email
+          type: string
+        password:
+          title: Password
+          type: string
+      required:
+      - email
+      - password
+      title: Login
+      type: object
+    Product:
+      properties:
+        category:
+          title: Category
+          type: string
+        description:
+          title: Description
+          type: string
+        feature_product:
+          default: false
+          title: Feature Product
+          type: boolean
+        images:
+          default: []
+          items:
+            type: string
+          title: Images
+          type: array
+        item:
+          default: 0
+          title: Item
+          type: integer
+        name:
+          title: Name
+          type: string
+        price:
+          default: 0
+          title: Price
+          type: integer
+      required:
+      - name
+      - category
+      - description
+      title: Product
+      type: object
+    Register:
+      properties:
+        confirm_password:
+          title: Confirm Password
+          type: string
+        email:
+          title: Email
+          type: string
+        is_admin:
+          default: false
+          title: Is Admin
+          type: boolean
+        is_logged_in:
+          default: true
+          title: Is Logged In
+          type: boolean
+        password:
+          title: Password
+          type: string
+        username:
+          title: Username
+          type: string
+      required:
+      - username
+      - email
+      - password
+      - confirm_password
+      title: Register
+      type: object
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          title: Location
+          type: array
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+      type: object
+info:
+  title: FastAPI
+  version: 0.1.0
+openapi: 3.1.0
+paths:
+  /:
+    get:
+      operationId: home_page__get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Home Page
+      tags:
+      - website
+  /api/auth/change-password:
+    patch:
+      operationId: change_password_api_auth_change_password_patch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Change Password
+      tags:
+      - auth
+  /api/auth/clear:
+    get:
+      operationId: clear_session_api_auth_clear_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Clear Session
+      tags:
+      - auth
+  /api/auth/login:
+    post:
+      operationId: login_user_api_auth_login_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Login User
+      tags:
+      - auth
+  /api/auth/logout:
+    post:
+      operationId: log_out_api_auth_logout_post
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Log Out
+      tags:
+      - auth
+  /api/auth/register:
+    post:
+      operationId: register_user_api_auth_register_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Register User
+      tags:
+      - auth
+  /api/auth/users:
+    get:
+      operationId: find_users_api_auth_users_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Find Users
+      tags:
+      - auth
+  /api/auth/users/{id}:
+    get:
+      operationId: find_user_api_auth_users__id__get
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          title: Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Find User
+      tags:
+      - auth
+  /api/auth/{id}:
+    patch:
+      operationId: edit_password_api_auth__id__patch
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          title: Id
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditPassword'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Edit Password
+      tags:
+      - auth
+  /api/cart/:
+    get:
+      operationId: get_cart_items_api_cart__get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Get Cart Items
+      tags:
+      - Cart
+    post:
+      operationId: add_to_cart_api_cart__post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cart'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Add To Cart
+      tags:
+      - Cart
+  /api/cart/decrease:
+    post:
+      operationId: decrease_qty_api_cart_decrease_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdjustQty'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Decrease Qty
+      tags:
+      - Cart
+  /api/cart/increase:
+    post:
+      operationId: increase_qty_api_cart_increase_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdjustQty'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Increase Qty
+      tags:
+      - Cart
+  /api/categories/:
+    get:
+      operationId: find_categories_api_categories__get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Find Categories
+      tags:
+      - category
+    post:
+      operationId: create_category_api_categories__post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create Category
+      tags:
+      - category
+  /api/categories/parents:
+    get:
+      operationId: find_parent_categories_api_categories_parents_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Find Parent Categories
+      tags:
+      - category
+  /api/categories/{id}:
+    delete:
+      operationId: delete_category_api_categories__id__delete
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          title: Id
+          type: string
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Delete Category
+      tags:
+      - category
+    get:
+      operationId: find_category_api_categories__id__get
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          title: Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Find Category
+      tags:
+      - category
+    put:
+      operationId: update_category_api_categories__id__put
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          title: Id
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Update Category
+      tags:
+      - category
+  /api/checkouts/:
+    get:
+      operationId: find_checkouts_api_checkouts__get
+      parameters:
+      - in: query
+        name: q
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Q
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Find Checkouts
+      tags:
+      - checkout
+    post:
+      operationId: create_checkout_api_checkouts__post
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Create Checkout
+      tags:
+      - checkout
+  /api/checkouts/{checkout_id}:
+    get:
+      operationId: find_checkout_api_checkouts__checkout_id__get
+      parameters:
+      - in: path
+        name: checkout_id
+        required: true
+        schema:
+          title: Checkout Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Find Checkout
+      tags:
+      - checkout
+  /api/images/:
+    get:
+      operationId: find_images_api_images__get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Find Images
+      tags:
+      - image
+    post:
+      operationId: upload_api_images__post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_api_images__post'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Upload
+      tags:
+      - image
+  /api/images/{id}:
+    delete:
+      operationId: remove_image_api_images__id__delete
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          title: Id
+          type: string
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Remove Image
+      tags:
+      - image
+    get:
+      operationId: find_image_api_images__id__get
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          title: Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Find Image
+      tags:
+      - image
+  /api/products/:
+    get:
+      operationId: find_products_api_products__get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Find Products
+      tags:
+      - product
+    post:
+      operationId: create_product_api_products__post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create Product
+      tags:
+      - product
+  /api/products/feature:
+    get:
+      operationId: find_feature_products_api_products_feature_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Find Feature Products
+      tags:
+      - product
+  /api/products/{id}:
+    delete:
+      operationId: delete_product_api_products__id__delete
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          title: Id
+          type: string
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Delete Product
+      tags:
+      - product
+    get:
+      operationId: find_product_api_products__id__get
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          title: Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Find Product
+      tags:
+      - product
+    patch:
+      operationId: update_stock_api_products__id__patch
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          title: Id
+          type: string
+      - in: query
+        name: data
+        required: true
+        schema:
+          title: Data
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Update Stock
+      tags:
+      - product
+    put:
+      operationId: update_product_api_products__id__put
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          title: Id
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Update Product
+      tags:
+      - product
+  /cart:
+    get:
+      operationId: cart_page_cart_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Cart Page
+      tags:
+      - website
+  /checkouts:
+    get:
+      operationId: checkout_page_checkouts_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Checkout Page
+      tags:
+      - website
+  /dashboard:
+    get:
+      operationId: redirect_route_dashboard_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Redirect Route
+      tags:
+      - dashboard
+  /dashboard/categories:
+    get:
+      operationId: category_page_dashboard_categories_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Category Page
+      tags:
+      - dashboard
+  /dashboard/categories/{id}:
+    get:
+      operationId: category_detail_page_dashboard_categories__id__get
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          title: Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Category Detail Page
+      tags:
+      - dashboard
+  /dashboard/change-password:
+    get:
+      operationId: change_password_dashboard_change_password_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Change Password
+      tags:
+      - dashboard
+  /dashboard/checkouts:
+    get:
+      operationId: checkout_page_dashboard_checkouts_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Checkout Page
+      tags:
+      - dashboard
+  /dashboard/checkouts/{id}:
+    get:
+      operationId: checkout_detail_page_dashboard_checkouts__id__get
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          title: Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Checkout Detail Page
+      tags:
+      - dashboard
+  /dashboard/images:
+    get:
+      operationId: image_page_dashboard_images_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Image Page
+      tags:
+      - dashboard
+  /dashboard/products:
+    get:
+      operationId: product_page_dashboard_products_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Product Page
+      tags:
+      - dashboard
+  /dashboard/products/{id}:
+    get:
+      operationId: product_detail_page_dashboard_products__id__get
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          title: Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Product Detail Page
+      tags:
+      - dashboard
+  /dashboard/users:
+    get:
+      operationId: user_page_dashboard_users_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: User Page
+      tags:
+      - dashboard
+  /dashboard/users/{id}:
+    get:
+      operationId: user_detail_page_dashboard_users__id__get
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          title: Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: User Detail Page
+      tags:
+      - dashboard
+  /login:
+    get:
+      operationId: login_login_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Login
+  /pdf/{checkout_id}:
+    get:
+      operationId: pdf_pdf__checkout_id__get
+      parameters:
+      - in: path
+        name: checkout_id
+        required: true
+        schema:
+          title: Checkout Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Pdf
+      tags:
+      - website
+  /products:
+    get:
+      operationId: products_page_products_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Products Page
+      tags:
+      - website
+  /products/{product_id}:
+    get:
+      operationId: product_detail_page_products__product_id__get
+      parameters:
+      - in: path
+        name: product_id
+        required: true
+        schema:
+          title: Product Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Product Detail Page
+      tags:
+      - website
+  /register:
+    get:
+      operationId: register_register_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Register
